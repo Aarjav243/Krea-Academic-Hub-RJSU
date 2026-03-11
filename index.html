@@ -912,9 +912,12 @@
         }
 
         const tl = gsap.timeline();
-        tl.to(currentActive, { opacity: 0, y: -10, duration: 0.2, ease: "power2.inOut" })
-          .set(currentActive, { display: 'none', className: 'tab-content h-full flex flex-col hidden opacity-0' })
-          .set(nextTab, { display: 'flex', className: 'tab-content h-full flex flex-col relative' })
+        if (currentActive) {
+            tl.to(currentActive, { opacity: 0, y: -10, duration: 0.2, ease: "power2.inOut" })
+              .set(currentActive, { display: 'none', className: 'tab-content h-full flex flex-col hidden opacity-0' });
+        }
+        
+        tl.set(nextTab, { display: 'flex', className: 'tab-content h-full flex flex-col relative' })
           .fromTo(nextTab, 
              { opacity: 0, y: 20 },
              { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }
