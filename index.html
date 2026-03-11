@@ -60,6 +60,54 @@
             border-radius: 0 4px 4px 0;
         }
 
+        /* Credits Tracker Circular Progress */
+        .circular-progress {
+            position: relative;
+            transform: rotate(-90deg);
+        }
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        .circular-progress .bg { stroke: #F3F4F6; }
+        .circular-progress .prog { 
+            stroke: #3B82F6; 
+            stroke-dasharray: 251.2; /* 2 * pi * 40 */
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .circular-progress.indigo .prog { stroke: #6366F1; }
+        .circular-progress.amber .prog { stroke: #F59E0B; }
+        
+        .progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(90deg); /* Counter rotate text */
+        }
+        
+        /* Premium Table Styles */
+        .grades-table th { font-size: 0.70rem; letter-spacing: 0.05em; }
+        .grades-table td { font-size: 0.875rem; }
+        .grade-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .grade-a-plus { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+        .grade-a { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+        .grade-a-minus { background: #EEF2FF; color: #4F46E5; border: 1px solid #C7D2FE; }
+        .grade-b { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
+
+
         .glass-header {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
@@ -122,13 +170,22 @@
     </div>
 
     <div class="flex items-center gap-6">
-        <div class="flex items-center gap-3 magnetic">
+        <div class="relative inline-block text-left">
+            <label class="text-xs uppercase tracking-widest text-gray-400 font-semibold mr-2">Role</label>
+            <select id="roleSelector" onchange="updateRole()" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 outline-none cursor-pointer hover:bg-white transition-colors">
+                <option value="student">Student</option>
+                <option value="ta">TA</option>
+                <option value="professor">Professor</option>
+                <option value="alumni">Alumni</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-3 border-l pl-6 border-gray-100 magnetic">
             <div class="text-right">
-                <p class="text-sm font-semibold" id="userName">Aryan Sharma</p>
-                <p class="text-xs text-gray-400">Student</p>
+                <p class="text-sm font-semibold" id="userName">Aarjav Jain</p>
+                <p class="text-xs text-gray-400" id="userRoleDisplay">Student</p>
             </div>
             <div class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 font-medium overflow-hidden shadow-inner">
-                AS
+                AJ
             </div>
         </div>
     </div>
@@ -137,7 +194,7 @@
 <!-- STATE 1: DASHBOARD -->
 <main id="state-dashboard" class="pt-24 pb-12 px-8 max-w-7xl mx-auto">
     <div class="mb-12">
-        <h1 class="text-5xl font-bold text-gray-900 mb-4 tracking-tight" id="main-heading">Welcome back, Aryan.</h1>
+        <h1 class="text-5xl font-bold text-gray-900 mb-4 tracking-tight" id="main-heading">Welcome back, Aarjav.</h1>
         <p class="text-gray-500 text-lg" id="sub-heading">You have 3 assignments due this week. Stay focused.</p>
     </div>
 
@@ -193,6 +250,148 @@
             </div>
         </div>
     </div>
+
+    <!-- STUDENT COMPONENTS OVERVIEW (Hidden on non-student roles) -->
+    <div id="student-components-grid" class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
+        
+        <!-- Component 1: Total Credits Tracker -->
+        <div class="bg-white rounded-[24px] p-8 border border-gray-100 shadow-sm col-span-1 lg:col-span-1 flex flex-col student-widget">
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Total Credits Tracker</h3>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-8">Degree Progress</p>
+            
+            <div class="space-y-6 flex-1 flex flex-col justify-center">
+                <!-- Minor: Economics -->
+                <div class="flex items-center gap-6 group cursor-pointer">
+                    <div class="w-20 h-20 relative circular-progress amber">
+                        <svg width="80" height="80">
+                            <circle class="bg" cx="40" cy="40" r="36"></circle>
+                            <!-- Progress setup for GSAP animation: path length is ~226. 18 / 24 = 75% -> offset 56.5 -->
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="56.5" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="text-lg font-bold text-gray-800 leading-none">18</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 24</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 group-hover:text-yellow-600 transition-colors">Minor Credits</h4>
+                        <p class="text-sm text-gray-500">Economics</p>
+                    </div>
+                </div>
+                
+                <hr class="border-gray-50">
+                
+                <!-- Major: Data Science -->
+                <div class="flex items-center gap-6 group cursor-pointer">
+                    <div class="w-20 h-20 relative circular-progress indigo">
+                        <svg width="80" height="80">
+                            <circle class="bg" cx="40" cy="40" r="36"></circle>
+                            <!-- 32 / 48 = 66% -> offset 76.8 -->
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="76.8" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="text-lg font-bold text-gray-800 leading-none">32</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 48</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">Major Credits</h4>
+                        <p class="text-sm text-gray-500">Data Science</p>
+                    </div>
+                </div>
+
+                <hr class="border-gray-50">
+
+                <!-- KCCS / 1st Year -->
+                <div class="flex items-center gap-6 group cursor-pointer">
+                    <div class="w-20 h-20 relative circular-progress">
+                        <svg width="80" height="80">
+                            <circle class="bg" cx="40" cy="40" r="36"></circle>
+                            <!-- 24 / 24 = 100% -> offset 0 -->
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="0" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="text-lg font-bold text-gray-800 leading-none">24</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 24</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">KCCS Credits</h4>
+                        <p class="text-sm text-gray-500">First Year Core</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component 2: Grades Vault -->
+        <div class="bg-white rounded-[24px] p-8 border border-gray-100 shadow-sm col-span-1 lg:col-span-2 flex flex-col student-widget">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Grades Vault</h3>
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Aarjav Jain • B.Sc (Hons) Data Science</p>
+                </div>
+                <div class="text-right">
+                    <span class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none">Cumulative GPA</span>
+                    <span class="text-3xl font-bold text-gray-900">9.42</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Trimester 1 -->
+                <div>
+                    <h4 class="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-4 border-b border-blue-50 pb-2">Trimester 1</h4>
+                    <table class="w-full text-left grades-table">
+                        <tbody class="divide-y divide-gray-50">
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">CS 101</td>
+                                <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
+                            </tr>
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">MATH 101</td>
+                                <td class="py-3 text-right"><span class="grade-badge grade-a scale-75 shadow-sm">A</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">9.6</td>
+                            </tr>
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">ENG 101</td>
+                                <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Trimester 2 -->
+                <div>
+                    <h4 class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-4 border-b border-indigo-50 pb-2">Trimester 2</h4>
+                    <table class="w-full text-left grades-table">
+                        <tbody class="divide-y divide-gray-50">
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">DS 302</td>
+                                <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
+                            </tr>
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">CS 401</td>
+                                <td class="py-3 text-right"><span class="grade-badge grade-a scale-75 shadow-sm">A</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">9.6</td>
+                            </tr>
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">MATH 310</td>
+                                <td class="py-3 text-right"><span class="grade-badge grade-b scale-75 shadow-sm">B+</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">8.7</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6 text-center">
+                <span class="text-[10px] text-blue-600 font-bold tracking-widest uppercase cursor-pointer hover:text-blue-800 transition-colors magnetic inline-block">Download Full Academic Transcript (PDF)</span>
+            </div>
+        </div>
+
+    </div>
 </main>
 
 <!-- STATE 2: COURSE VIEW -->
@@ -227,6 +426,10 @@
             <button onclick="switchTab('modules')" class="sidebar-item w-full flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium transition-all relative group" data-tab="modules">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                 Modules
+            </button>
+            <button onclick="switchTab('attendance')" class="sidebar-item w-full flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium transition-all relative group" data-tab="attendance">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Attendance
             </button>
         </nav>
     </aside>
@@ -419,6 +622,94 @@
             </div>
         </div>
 
+        <!-- Tab: Attendance -->
+        <div id="tab-attendance" class="tab-content h-full flex flex-col hidden opacity-0">
+            <div class="bg-white p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold tracking-tight">Attendance Tracking</h2>
+                <p class="text-xs text-gray-400 mt-1">Real-time attendance summary and history</p>
+            </div>
+            
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Stats Overview -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-6 attendance-stat">
+                            <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-2">Classes Present</p>
+                                <p class="text-3xl font-bold text-gray-900">18 <span class="text-sm text-gray-400 font-medium">/ 20</span></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-6 attendance-stat">
+                            <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-2">Classes Absent</p>
+                                <p class="text-3xl font-bold text-gray-900">2 <span class="text-sm text-gray-400 font-medium">/ 20</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Table -->
+                    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Day & Date</th>
+                                    <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Monday, March 9, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Friday, March 6, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full uppercase tracking-wider">Absent</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Wednesday, March 4, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Monday, March 2, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Friday, February 27, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Wednesday, February 25, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Monday, February 23, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full uppercase tracking-wider">Absent</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Friday, February 20, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Wednesday, February 18, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                                <tr class="attendance-row opacity-0">
+                                    <td class="px-8 py-4 text-sm font-semibold text-gray-700">Monday, February 16, 2026</td>
+                                    <td class="px-8 py-4 text-right"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">Present</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 </section>
 
@@ -549,6 +840,49 @@
         );
     }
 
+    // Re-implemented Role Switching Logic to handle component visibility
+    function updateRole() {
+        const role = document.getElementById('roleSelector').value;
+        const display = document.getElementById('userRoleDisplay');
+        const studentGrid = document.getElementById('student-components-grid');
+        
+        display.innerText = role.charAt(0).toUpperCase() + role.slice(1);
+        gsap.fromTo(display, { opacity: 0, y: -5 }, { opacity: 1, y: 0, duration: 0.3 });
+        
+        if (role !== 'student') {
+            // Hide student specific widgets
+            gsap.to('.student-widget', { 
+                opacity: 0, 
+                y: 20, 
+                stagger: 0.1, 
+                duration: 0.4, 
+                ease: "power2.in",
+                onComplete: () => {
+                   if(studentGrid) studentGrid.style.display = 'none';
+                }
+            });
+        } else {
+            // Show student widgets
+            if(studentGrid) studentGrid.style.display = 'grid';
+            gsap.fromTo('.student-widget', 
+                { opacity: 0, y: 30 }, 
+                { opacity: 1, y: 0, stagger: 0.15, duration: 0.6, ease: "back.out(1.2)" }
+            );
+            
+            // Re-trigger progress animations when switching back to student form
+            setTimeout(() => {
+                document.querySelectorAll('.prog').forEach(p => {
+                    p.style.transition = 'none';
+                    p.style.strokeDashoffset = '226';
+                    // Trigger reflow
+                    void p.offsetWidth;
+                    p.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                    p.style.strokeDashoffset = p.getAttribute('data-target');
+                });
+            }, 50);
+        }
+    }
+
     function switchTab(tabId, instant = false) {
         const currentActive = document.querySelector('.tab-content:not(.hidden)');
         const nextTab = document.getElementById('tab-' + tabId);
@@ -585,6 +919,18 @@
             gsap.fromTo('.module-card', 
                 { opacity: 0, x: -30 },
                 { opacity: 1, x: 0, stagger: 0.1, duration: 0.5, ease: "back.out(1.2)", delay: 0.2 }
+            );
+        }
+
+        // If switching to attendance, animate the stats and table
+        if (tabId === 'attendance') {
+            gsap.fromTo('.attendance-stat', 
+                { opacity: 0, scale: 0.9, y: 20 },
+                { opacity: 1, scale: 1, y: 0, stagger: 0.1, duration: 0.6, ease: "back.out(1.5)", delay: 0.2 }
+            );
+            gsap.fromTo('.attendance-row', 
+                { opacity: 0, x: -20 },
+                { opacity: 1, x: 0, stagger: 0.05, duration: 0.4, ease: "power2.out", delay: 0.4 }
             );
         }
     }
@@ -681,7 +1027,19 @@
           // Animate cards
           .from('.luxury-card-container', {
               opacity: 0, y: 50, stagger: 0.1, duration: 1, ease: "expo.out"
-          }, "-=0.4");
+          }, "-=0.4")
+          
+          // Animate Student Widgets
+          .from('.student-widget', {
+              opacity: 0, y: 40, stagger: 0.15, duration: 0.8, ease: "back.out(1.2)"
+          }, "-=0.6");
+          
+        // Trigger SVG Circular Progress Bars after load
+        setTimeout(() => {
+            document.querySelectorAll('.prog').forEach(p => {
+                p.style.strokeDashoffset = p.getAttribute('data-target');
+            });
+        }, 800);
     };
 </script>
 
