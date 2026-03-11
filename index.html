@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexGen LMS | University Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            overflow-x: hidden;
+        }
+        
+        /* 3D Tilt Card Container styling */
+        .luxury-card-container {
+            perspective: 1000px;
+        }
+        .luxury-card {
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: border-color 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        .luxury-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .luxury-card:hover::before {
+            opacity: 1;
+        }
+        
+        /* Sidebar active state */
+        .sidebar-item.active {
+            color: #3B82F6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+        .sidebar-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25%;
+            height: 50%;
+            width: 3px;
+            background: #3B82F6;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .chat-bubble {
+            max-width: 80%;
+            border-radius: 18px;
+            padding: 10px 16px;
+            transform-origin: bottom left;
+        }
+        .chat-bubble.sent {
+            background-color: #3B82F6;
+            color: white;
+            border-bottom-right-radius: 4px;
+            transform-origin: bottom right;
+        }
+        .chat-bubble.received {
+            background-color: #F3F4F6;
+            color: #1F2937;
+            border-bottom-left-radius: 4px;
+        }
+        .certificate-ribbon {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        }
+
+        /* Magnetic Class */
+        .magnetic {
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        /* Reveal words utility */
+        .word-wrap {
+            display: inline-block;
+            overflow: hidden;
+            vertical-align: bottom;
+        }
+        .word-inner {
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        /* CustomScroll */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
+
+        #state-course { display: none; opacity: 0; }
+    </style>
+</head>
+<body class="antialiased">
+
+<header class="glass-header fixed top-0 w-full z-50 px-8 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2 cursor-pointer magnetic" onclick="goToDashboard()">
+        <div class="w-8 h-8 certificate-ribbon rounded-lg flex items-center justify-center text-white font-bold">U</div>
+        <span class="text-xl font-bold tracking-tight">NexGen<span class="text-blue-600">LMS</span></span>
+    </div>
+
+    <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3 magnetic">
+            <div class="text-right">
+                <p class="text-sm font-semibold" id="userName">Aryan Sharma</p>
+                <p class="text-xs text-gray-400">Student</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 font-medium overflow-hidden shadow-inner">
+                AS
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- STATE 1: DASHBOARD -->
+<main id="state-dashboard" class="pt-24 pb-12 px-8 max-w-7xl mx-auto">
+    <div class="mb-12">
+        <h1 class="text-5xl font-bold text-gray-900 mb-4 tracking-tight" id="main-heading">Welcome back, Aryan.</h1>
+        <p class="text-gray-500 text-lg" id="sub-heading">You have 3 assignments due this week. Stay focused.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="courseGrid">
+        <!-- CS 101 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('CS 101', 'Introduction to Computer Science')">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">CS 101</h3>
+                <p class="text-gray-500 mb-8 text-sm">Introduction to Computer Science</p>
+                <div class="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>8 Modules</span>
+                    <span class="text-blue-600">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATH 202 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('MATH 202', 'Linear Algebra & Calculus')">
+                <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">MATH 202</h3>
+                <p class="text-gray-500 mb-8 text-sm">Linear Algebra & Calculus</p>
+                <div class="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>12 Modules</span>
+                    <span class="text-blue-600">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHIL 301 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('PHIL 301', 'Modern Philosophy')">
+                <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">PHIL 301</h3>
+                <p class="text-gray-500 mb-8 text-sm">Modern Philosophy</p>
+                <div class="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>6 Modules</span>
+                    <span class="text-blue-600">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- STATE 2: COURSE VIEW -->
+<section id="state-course" class="fixed inset-0 pt-20 flex">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-gray-100 bg-white flex flex-col pt-8 z-10">
+        <div class="px-6 mb-8 flex items-center gap-3 text-blue-600 font-semibold text-sm cursor-pointer hover:text-blue-800 transition-colors magnetic" onclick="goToDashboard()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back
+        </div>
+        
+        <div class="px-6 mb-6">
+            <h2 id="courseTitle" class="text-xl font-bold text-gray-900 leading-tight tracking-tight">CS 101</h2>
+            <p id="courseSubtitle" class="text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">Intro to Computer Science</p>
+        </div>
+
+        <nav class="flex-1 px-3 space-y-2">
+            <button onclick="switchTab('section-chat')" class="sidebar-item w-full flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium transition-all relative active group" data-tab="section-chat">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                Section Doubt Chat
+            </button>
+            <button onclick="switchTab('global-chat')" class="sidebar-item w-full flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium transition-all relative group" data-tab="global-chat">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                Course Group Chat
+            </button>
+            <button onclick="switchTab('calendar')" class="sidebar-item w-full flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium transition-all relative group" data-tab="calendar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                Office Hours
+            </button>
+            <button onclick="switchTab('modules')" class="sidebar-item w-full flex items-center gap-4 px-3 py-3 rounded-lg text-sm font-medium transition-all relative group" data-tab="modules">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                Modules
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-gray-50 overflow-hidden relative shadow-inner">
+        
+        <!-- Tab: Section Chat -->
+        <div id="tab-section-chat" class="tab-content h-full flex flex-col">
+            <div class="bg-white p-6 border-b border-gray-100 flex justify-between items-center outline-none">
+                <div>
+                    <h2 class="text-xl font-bold tracking-tight">Section A1 - Doubts</h2>
+                    <p class="text-xs text-gray-400 mt-1">Restricted to your enrollment section</p>
+                </div>
+            </div>
+            <div class="flex-1 p-6 overflow-y-auto space-y-6" id="section-chat-messages">
+                <div class="flex flex-col items-start message-anim">
+                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-1 ml-2">Student: Ananya P.</span>
+                    <div class="chat-bubble received shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-gray-100">Does anyone understand the recursion homework?</div>
+                </div>
+                <div class="flex flex-col items-end message-anim">
+                    <span class="text-[10px] text-blue-600 font-bold uppercase mb-1 mr-2">You</span>
+                    <div class="chat-bubble sent shadow-[0_8px_16px_rgba(59,130,246,0.2)]">Try breaking it into a base case first!</div>
+                </div>
+            </div>
+            <!-- Chat Input -->
+            <div class="p-4 bg-white border-t border-gray-100 flex gap-4 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+                <input type="text" id="section-chat-input" onkeypress="if(event.key === 'Enter') sendMessage('section-chat-input', 'section-chat-messages')" placeholder="Type your doubt..." class="flex-1 bg-gray-50 border-none rounded-xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-blue-100 outline-none transition-shadow">
+                <button onclick="sendMessage('section-chat-input', 'section-chat-messages')" class="bg-blue-600 p-3.5 rounded-xl text-white hover:bg-blue-700 shadow-md transform active:scale-95 transition-all magnetic">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab: Course Group Chat -->
+        <div id="tab-global-chat" class="tab-content h-full flex flex-col hidden opacity-0">
+            <div class="bg-white p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold tracking-tight">Course Group Chat</h2>
+                <p class="text-xs text-gray-400 mt-1">All sections • Syllabus & Pacing</p>
+            </div>
+            <div class="flex-1 p-6 overflow-y-auto space-y-6" id="global-chat-messages">
+                <div class="bg-blue-50/50 border border-blue-100 p-5 rounded-2xl text-blue-800 text-sm shadow-sm backdrop-blur-sm message-anim">
+                    <strong>Notice:</strong> Midterm exam dates are moved to next Thursday.
+                </div>
+                <div class="flex flex-col items-start message-anim">
+                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-1 ml-2">Prof. Rakesh</span>
+                    <div class="chat-bubble received bg-white border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)]">I've posted the updated syllabus in the Global drive.</div>
+                </div>
+            </div>
+            <!-- Missing Input Added Here -->
+            <div class="p-4 bg-white border-t border-gray-100 flex gap-4 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+                <input type="text" id="global-chat-input" onkeypress="if(event.key === 'Enter') sendMessage('global-chat-input', 'global-chat-messages')" placeholder="Message the course group..." class="flex-1 bg-gray-50 border-none rounded-xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-blue-100 outline-none transition-shadow">
+                <button onclick="sendMessage('global-chat-input', 'global-chat-messages')" class="bg-blue-600 p-3.5 rounded-xl text-white hover:bg-blue-700 shadow-md transform active:scale-95 transition-all magnetic">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab: Calendar -->
+        <div id="tab-calendar" class="tab-content h-full flex flex-col hidden opacity-0">
+            <!-- Dynamic Header Container -->
+            <div class="bg-white p-6 border-b border-gray-100 flex justify-between items-center transition-all duration-300 z-20">
+                <div>
+                    <!-- Student Header Elements -->
+                    <div id="calendar-header-student" class="transition-opacity duration-300">
+                        <h2 class="text-xl font-bold tracking-tight">Office Hours</h2>
+                        <p class="text-xs text-gray-400 mt-1">Click a slot to book a 15m session</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Date Badge -->
+                    <div class="text-sm font-bold text-gray-500 bg-gray-100 px-4 py-1.5 rounded-full shadow-inner">
+                        March 2026
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex-1 p-8 overflow-y-auto bg-gray-50/50">
+                <!-- GRID: STUDENT VIEW -->
+                <div id="calendar-student-view" class="grid grid-cols-5 gap-4 h-full transition-opacity duration-500">
+                    <div class="space-y-4">
+                        <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Mon</div>
+                        <div class="h-24 rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 bg-gray-50 p-2 opacity-60">
+                            <span class="text-xs text-gray-400 font-semibold">Booked</span>
+                        </div>
+                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
+                            <span class="text-[11px] text-blue-600 font-bold mb-1">10:00 AM</span>
+                            <span class="text-xs font-semibold text-gray-700">TA Neha</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Tue</div>
+                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
+                            <span class="text-[11px] text-blue-600 font-bold mb-1">2:30 PM</span>
+                            <span class="text-xs font-semibold text-gray-700">Prof. Rakesh</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Wed</div>
+                        <div class="h-24 p-2"></div>
+                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
+                            <span class="text-[11px] text-blue-600 font-bold mb-1">11:00 AM</span>
+                            <span class="text-xs font-semibold text-gray-700">TA Rahul</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Thu</div>
+                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
+                            <span class="text-[11px] text-blue-600 font-bold mb-1">4:00 PM</span>
+                            <span class="text-xs font-semibold text-gray-700">Prof. Rakesh</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Fri</div>
+                        <div class="h-24 p-2"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Tab: Modules -->
+        <div id="tab-modules" class="tab-content h-full flex flex-col hidden opacity-0">
+            <div class="bg-white p-6 border-b border-gray-100 bg-opacity-90 backdrop-blur-sm z-10 relative">
+                <h2 class="text-xl font-bold tracking-tight">Certification Roadmap</h2>
+                <p class="text-xs text-gray-400 mt-1">Complete all modules to earn your credential</p>
+            </div>
+            
+            <div class="flex-1 p-8 max-w-2xl mx-auto w-full overflow-y-auto z-0">
+                <div class="space-y-4 relative" id="moduleList">
+                    <!-- Progress Line background overlay (Optional style flex) -->
+                    <div class="absolute left-7 top-6 bottom-6 w-0.5 bg-blue-100 -z-10 rounded-full"></div>
+                    
+                    <label class="bg-white shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all flex items-center gap-5 p-5 rounded-2xl cursor-pointer module-card transform duration-300">
+                        <div class="relative flex items-center justify-center">
+                            <input type="checkbox" class="module-check peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-md checked:bg-blue-600 checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors z-10 cursor-pointer">
+                            <svg class="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity z-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-800">Module 01: Foundations</p>
+                            <p class="text-[13px] text-gray-500 mt-0.5">Core concepts and syntax</p>
+                        </div>
+                    </label>
+                    <label class="bg-white shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all flex items-center gap-5 p-5 rounded-2xl cursor-pointer module-card transform duration-300">
+                        <div class="relative flex items-center justify-center">
+                            <input type="checkbox" class="module-check peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-md checked:bg-blue-600 checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors z-10 cursor-pointer">
+                            <svg class="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity z-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-800">Module 02: Advanced Logic</p>
+                            <p class="text-[13px] text-gray-500 mt-0.5">Data structures and complexity</p>
+                        </div>
+                    </label>
+                    <label class="bg-white shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all flex items-center gap-5 p-5 rounded-2xl cursor-pointer module-card transform duration-300">
+                        <div class="relative flex items-center justify-center">
+                            <input type="checkbox" class="module-check peer appearance-none w-6 h-6 border-2 border-gray-200 rounded-md checked:bg-blue-600 checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors z-10 cursor-pointer">
+                            <svg class="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity z-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-800">Module 03: Final Project</p>
+                            <p class="text-[13px] text-gray-500 mt-0.5">Build a scalable application</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Certificate Reveal Container -->
+                <div id="certContainer" class="hidden mt-10 scale-90 opacity-0 text-center p-12 bg-white rounded-3xl shadow-2xl ring-1 ring-blue-100 relative overflow-hidden">
+                    <!-- Dynamic glow background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 opacity-50 pointer-events-none"></div>
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transform animate-blob"></div>
+                    <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transform animate-blob animation-delay-2000"></div>
+                    
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white mx-auto mb-6 shadow-[0_10px_25px_-5px_rgba(59,130,246,0.5)] transform relative z-10 cert-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h2 class="text-3xl font-extrabold mb-2 tracking-tight text-gray-900 relative z-10 cert-text">Congratulations!</h2>
+                    <p class="text-gray-500 mb-8 relative z-10 cert-text">You've successfully completed <span class="text-blue-600 font-bold" id="certCourseName"></span></p>
+                    <div class="border-t border-gray-100 pt-8 flex flex-col items-center relative z-10">
+                        <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-5 cert-text">Official NexGen Achievement</p>
+                        <div class="certificate-ribbon text-white px-8 py-3.5 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all transform cursor-pointer magnetic cert-text inline-block">VIEW CERTIFICATE</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</section>
+
+<!-- Footer -->
+<footer class="p-8 text-center text-gray-400 text-xs font-medium tracking-wide">
+    © 2026 NexGen University LMS • Built with GSAP & Tailwind
+</footer>
+
+<script>
+    // --- ANIMATION UTILS ---
+
+    // Split text for dynamic word reveal
+    function wrapWords(selector) {
+        const el = document.querySelector(selector);
+        if(!el) return;
+        const text = el.innerText;
+        el.innerHTML = text.split(' ').map(word => 
+            `<span class="word-wrap"><span class="word-inner">${word}</span></span>`
+        ).join(' ');
+    }
+
+    // Interactive 3D tilt for cards
+    document.querySelectorAll('.luxury-card-container').forEach(container => {
+        const card = container.querySelector('.luxury-card');
+        
+        container.addEventListener('mousemove', e => {
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Adjust divisor for effect strength (larger = more subtle)
+            const rotateX = ((y - centerY) / centerY) * -8; 
+            const rotateY = ((x - centerX) / centerX) * 8;
+            
+            gsap.to(card, {
+                rotateX: rotateX,
+                rotateY: rotateY,
+                duration: 0.4,
+                ease: "power2.out"
+            });
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            gsap.to(card, {
+                rotateX: 0,
+                rotateY: 0,
+                duration: 0.6,
+                ease: "power3.out"
+            });
+        });
+    });
+
+    // Magnetic buttons & icons
+    function bindMagnetics() {
+        document.querySelectorAll('.magnetic').forEach(btn => {
+            // Remove old listeners to avoid duplicates if re-binding
+            const clone = btn.cloneNode(true);
+            btn.parentNode.replaceChild(clone, btn);
+
+            clone.addEventListener('mousemove', (e) => {
+                const rect = clone.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                gsap.to(clone, {
+                    x: x * 0.3,
+                    y: y * 0.3,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            });
+            clone.addEventListener('mouseleave', () => {
+                gsap.to(clone, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.5,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            });
+        });
+    }
+    
+    // Bind magnetics initially
+    bindMagnetics();
+
+    // --- LOGIC ---
+
+    function openCourse(id, subtitle) {
+        document.getElementById('courseTitle').innerText = id;
+        document.getElementById('courseSubtitle').innerText = subtitle;
+        document.getElementById('certCourseName').innerText = id;
+
+        // Reset sidebar tabs to section-chat
+        switchTab('section-chat', true);
+
+        const tl = gsap.timeline();
+        tl.to('#state-dashboard', { opacity: 0, scale: 0.98, duration: 0.4, ease: "power2.inOut" })
+          .set('#state-dashboard', { display: 'none' })
+          .set('#state-course', { display: 'flex' })
+          .fromTo('#state-course', 
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+          );
+
+        // Animate chat messages inside the loaded tab
+        gsap.fromTo('.message-anim', 
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: "power2.out", delay: 0.3 }
+        );
+    }
+
+    function goToDashboard() {
+        const tl = gsap.timeline();
+        tl.to('#state-course', { opacity: 0, scale: 0.98, duration: 0.4, ease: "power2.inOut" })
+          .set('#state-course', { display: 'none' })
+          .set('#state-dashboard', { display: 'block' })
+          .fromTo('#state-dashboard', 
+            { opacity: 0, y: -20 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" }
+          );
+        
+        // Re-trigger course cards enter animation for flair
+        gsap.fromTo('.luxury-card-container',
+            { opacity: 0, y: 40 },
+            { opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "power3.out", delay: 0.4 }
+        );
+    }
+
+    function switchTab(tabId, instant = false) {
+        const currentActive = document.querySelector('.tab-content:not(.hidden)');
+        const nextTab = document.getElementById('tab-' + tabId);
+        
+        if (currentActive === nextTab && !instant) return;
+
+        // Update active class
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-tab') === tabId) item.classList.add('active');
+        });
+
+        if (instant) {
+            if (currentActive) {
+                currentActive.classList.add('hidden');
+                currentActive.style.opacity = '0';
+            }
+            nextTab.classList.remove('hidden');
+            nextTab.style.opacity = '1';
+            return;
+        }
+
+        const tl = gsap.timeline();
+        tl.to(currentActive, { opacity: 0, y: -10, duration: 0.2, ease: "power2.inOut" })
+          .set(currentActive, { display: 'none', className: 'tab-content h-full flex flex-col hidden opacity-0' })
+          .set(nextTab, { display: 'flex', className: 'tab-content h-full flex flex-col relative' })
+          .fromTo(nextTab, 
+             { opacity: 0, y: 20 },
+             { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }
+          );
+
+        // If switching to modules, animate the checklist
+        if (tabId === 'modules') {
+            gsap.fromTo('.module-card', 
+                { opacity: 0, x: -30 },
+                { opacity: 1, x: 0, stagger: 0.1, duration: 0.5, ease: "back.out(1.2)", delay: 0.2 }
+            );
+        }
+    }
+
+    // Module Completion Logic
+    document.querySelectorAll('.module-check').forEach(check => {
+        check.addEventListener('change', (e) => {
+            const card = e.target.closest('.module-card');
+            
+            // Subtle pop on click
+            gsap.fromTo(card, { scale: 0.98 }, { scale: 1, duration: 0.3, ease: "back.out(2)" });
+
+            const allChecked = Array.from(document.querySelectorAll('.module-check')).every(c => c.checked);
+            const container = document.getElementById('certContainer');
+
+            if (allChecked) {
+                container.classList.remove('hidden');
+                
+                const tl = gsap.timeline();
+                tl.fromTo(container, 
+                    { opacity: 0, scale: 0.8, y: 40 },
+                    { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "elastic.out(1, 0.6)", delay: 0.3 }
+                )
+                  .fromTo('.cert-icon', { rotate: -180, scale: 0 }, { rotate: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, "-=0.6")
+                  .fromTo('.cert-text', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.1, duration: 0.4 }, "-=0.4");
+            } else {
+                gsap.to(container, {
+                    opacity: 0, scale: 0.9, duration: 0.3, onComplete: () => container.classList.add('hidden')
+                });
+            }
+        });
+    });
+
+    // Chat Logic
+    function sendMessage(inputId, containerId) {
+        const input = document.getElementById(inputId);
+        const text = input.value.trim();
+        if (!text) return;
+
+        const container = document.getElementById(containerId);
+        
+        // Create the message element
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'flex flex-col items-end message-anim opacity-0 transform translate-y-4';
+        msgDiv.innerHTML = `
+            <span class="text-[10px] text-blue-600 font-bold uppercase mb-1 mr-2">You</span>
+            <div class="chat-bubble sent shadow-[0_8px_16px_rgba(59,130,246,0.2)]" style="transform-origin: bottom right;">
+                ${text}
+            </div>
+        `;
+
+        container.appendChild(msgDiv);
+        input.value = '';
+        
+        // Scroll to the latest message
+        container.scrollTop = container.scrollHeight;
+
+        // GSAP popping animation for the new message
+        gsap.to(msgDiv, {
+            opacity: 1,
+            y: 0,
+            duration: 0.4,
+            ease: "back.out(1.5)"
+        });
+        
+        // Bouncy interaction on the bubble itself
+        const bubble = msgDiv.querySelector('.chat-bubble');
+        gsap.from(bubble, {
+            scale: 0.5,
+            duration: 0.5,
+            ease: "elastic.out(1, 0.5)",
+            delay: 0.1
+        });
+    }
+
+    // Initial load animations
+    window.onload = () => {
+        // Prepare text split
+        wrapWords('#main-heading');
+        
+        const tl = gsap.timeline();
+        
+        // Header fade in
+        tl.from('header', { y: -50, opacity: 0, duration: 0.8, ease: "power3.out" })
+          
+          // Animate split words
+          .from('.word-inner', { 
+              y: 60, opacity: 0, stagger: 0.05, duration: 0.8, ease: "power4.out" 
+          }, "-=0.4")
+          
+          // Animate subheading
+          .from('#sub-heading', { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" }, "-=0.6")
+          
+          // Animate cards
+          .from('.luxury-card-container', {
+              opacity: 0, y: 50, stagger: 0.1, duration: 1, ease: "expo.out"
+          }, "-=0.4");
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "nexgen-lms-prototype",
+  "version": "1.0.0",
+  "description": "High-fidelity LMS Dashboard Prototype",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Antigravity",
+  "license": "ISC"
+}
