@@ -198,54 +198,115 @@
         <p class="text-gray-500 text-lg" id="sub-heading">You have 3 assignments due this week. Stay focused.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="courseGrid">
-        <!-- CS 101 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="courseGrid">
+        <!-- DATA 201 -->
         <div class="luxury-card-container">
-            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('CS 101', 'Introduction to Computer Science')">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('DATA 201', 'Intro to Data Science')">
                 <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 </div>
-                <h3 class="text-2xl font-bold mb-2">CS 101</h3>
-                <p class="text-gray-500 mb-8 text-sm">Introduction to Computer Science</p>
-                <div class="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
-                    <span>8 Modules</span>
-                    <span class="text-blue-600">Active</span>
+                <h3 class="text-xl font-bold mb-1">DATA 201</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Intro to Data Science</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
                 </div>
             </div>
         </div>
 
-        <!-- MATH 202 -->
+        <!-- DATA 202 -->
         <div class="luxury-card-container">
-            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('MATH 202', 'Linear Algebra & Calculus')">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('DATA 202', 'Data Management')">
                 <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                 </div>
-                <h3 class="text-2xl font-bold mb-2">MATH 202</h3>
-                <p class="text-gray-500 mb-8 text-sm">Linear Algebra & Calculus</p>
-                <div class="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
-                    <span>12 Modules</span>
-                    <span class="text-blue-600">Active</span>
+                <h3 class="text-xl font-bold mb-1">DATA 202</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Data Management</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
                 </div>
             </div>
         </div>
 
-        <!-- PHIL 301 -->
+        <!-- DATA 233 -->
         <div class="luxury-card-container">
-            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('PHIL 301', 'Modern Philosophy')">
-                <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('DATA 233', 'Machine Learning')">
+                <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 </div>
-                <h3 class="text-2xl font-bold mb-2">PHIL 301</h3>
-                <p class="text-gray-500 mb-8 text-sm">Modern Philosophy</p>
-                <div class="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
-                    <span>6 Modules</span>
-                    <span class="text-blue-600">Active</span>
+                <h3 class="text-xl font-bold mb-1">DATA 233</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Machine Learning</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA 234 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('DATA 234', 'Visual Analytics')">
+                <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 mb-6 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-1">DATA 234</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Visual Analytics</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA 205 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('DATA 205', 'Stats for DS')">
+                <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-1">DATA 205</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Stats for DS</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ECON 202 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('ECON 202', 'Intermediate Micro')">
+                <div class="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 mb-6 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16V17m0-1V7m0 0h1m-1 0H11" /></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-1">ECON 202</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Intermediate Micro</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ECON 201 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('ECON 201', 'Intro to Macro')">
+                <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-violet-600 mb-6 group-hover:bg-violet-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-1">ECON 201</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Intro to Macro</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA 223 -->
+        <div class="luxury-card-container">
+            <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('DATA 223', 'Applied Econometrics')">
+                <div class="w-12 h-12 bg-cyan-50 rounded-xl flex items-center justify-center text-cyan-600 mb-6 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-1z" /></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-1">DATA 223</h3>
+                <p class="text-gray-400 text-xs mb-6 uppercase tracking-wider font-semibold">Applied Econometrics</p>
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto border-t border-gray-50 pt-4 group-hover:border-blue-50 transition-colors">
+                    <span>Active</span>
                 </div>
             </div>
         </div>
@@ -260,17 +321,17 @@
             <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-8">Degree Progress</p>
             
             <div class="space-y-6 flex-1 flex flex-col justify-center">
-                <!-- Minor: Economics -->
+                <!-- Minor Credits -->
                 <div class="flex items-center gap-6 group cursor-pointer">
                     <div class="w-20 h-20 relative circular-progress amber">
                         <svg width="80" height="80">
                             <circle class="bg" cx="40" cy="40" r="36"></circle>
-                            <!-- Progress setup for GSAP animation: path length is ~226. 18 / 24 = 75% -> offset 56.5 -->
-                            <circle class="prog" cx="40" cy="40" r="36" data-target="56.5" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                            <!-- 18 / 32 = 56% -> offset 99.4 -->
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="99.4" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
                         </svg>
                         <div class="progress-text">
                             <span class="text-lg font-bold text-gray-800 leading-none">18</span>
-                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 24</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 32</span>
                         </div>
                     </div>
                     <div>
@@ -281,17 +342,17 @@
                 
                 <hr class="border-gray-50">
                 
-                <!-- Major: Data Science -->
+                <!-- Major Credits -->
                 <div class="flex items-center gap-6 group cursor-pointer">
                     <div class="w-20 h-20 relative circular-progress indigo">
                         <svg width="80" height="80">
                             <circle class="bg" cx="40" cy="40" r="36"></circle>
-                            <!-- 32 / 48 = 66% -> offset 76.8 -->
-                            <circle class="prog" cx="40" cy="40" r="36" data-target="76.8" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                            <!-- 32 / 80 = 40% -> offset 135.6 -->
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="135.6" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
                         </svg>
                         <div class="progress-text">
                             <span class="text-lg font-bold text-gray-800 leading-none">32</span>
-                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 48</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 80</span>
                         </div>
                     </div>
                     <div>
@@ -307,12 +368,12 @@
                     <div class="w-20 h-20 relative circular-progress">
                         <svg width="80" height="80">
                             <circle class="bg" cx="40" cy="40" r="36"></circle>
-                            <!-- 24 / 24 = 100% -> offset 0 -->
+                            <!-- 48 / 48 = 100% -> offset 0 -->
                             <circle class="prog" cx="40" cy="40" r="36" data-target="0" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
                         </svg>
                         <div class="progress-text">
-                            <span class="text-lg font-bold text-gray-800 leading-none">24</span>
-                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 24</span>
+                            <span class="text-lg font-bold text-gray-800 leading-none">48</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">/ 48</span>
                         </div>
                     </div>
                     <div>
@@ -346,17 +407,17 @@
                     <table class="w-full text-left grades-table">
                         <tbody class="divide-y divide-gray-50">
                             <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">CS 101</td>
+                                <td class="py-3 text-sm font-bold text-gray-900">DATA 201</td>
                                 <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
                                 <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
                             </tr>
                             <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">MATH 101</td>
+                                <td class="py-3 text-sm font-bold text-gray-900">ECON 201</td>
                                 <td class="py-3 text-right"><span class="grade-badge grade-a scale-75 shadow-sm">A</span></td>
                                 <td class="py-3 text-right text-xs font-bold text-gray-500">9.6</td>
                             </tr>
                             <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">ENG 101</td>
+                                <td class="py-3 text-sm font-bold text-gray-900">DATA 205</td>
                                 <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
                                 <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
                             </tr>
@@ -373,17 +434,17 @@
                     <table class="w-full text-left grades-table">
                         <tbody class="divide-y divide-gray-50">
                             <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">DS 302</td>
+                                <td class="py-3 text-sm font-bold text-gray-900">DATA 233</td>
                                 <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
                                 <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
                             </tr>
                             <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">CS 401</td>
+                                <td class="py-3 text-sm font-bold text-gray-900">DATA 202</td>
                                 <td class="py-3 text-right"><span class="grade-badge grade-a scale-75 shadow-sm">A</span></td>
                                 <td class="py-3 text-right text-xs font-bold text-gray-500">9.6</td>
                             </tr>
                             <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">MATH 310</td>
+                                <td class="py-3 text-sm font-bold text-gray-900">ECON 202</td>
                                 <td class="py-3 text-right"><span class="grade-badge grade-b scale-75 shadow-sm">B+</span></td>
                                 <td class="py-3 text-right text-xs font-bold text-gray-500">8.7</td>
                             </tr>
