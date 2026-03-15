@@ -4,8 +4,14 @@
   "description": "High-fidelity LMS Dashboard Prototype",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "pm2 start server.js --name krea-hub",
+    "stop": "pm2 stop krea-hub",
+    "log": "pm2 logs krea-hub",
+    "standalone": "node server.js"
   },
   "author": "Antigravity",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "pm2": "^6.0.14"
+  }
 }

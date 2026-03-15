@@ -1,0 +1,42 @@
+[
+  {
+    "text": "i don't think recursion is coming for tomorrow's paper",
+    "studentId": "K1001",
+    "studentName": "Ananya Patel",
+    "timestamp": "2026-03-14T21:44:03.791Z",
+    "courseId": "DATA233",
+    "chatType": "section"
+  },
+  {
+    "text": "yaa even i think so , professor's din't mention about it",
+    "studentId": "K1004",
+    "studentName": "Vikram Malhotra",
+    "timestamp": "2026-03-14T21:45:46.106Z",
+    "courseId": "DATA233",
+    "chatType": "section"
+  },
+  {
+    "text": "even i remember that",
+    "studentId": "K1003",
+    "studentName": "Sanya Gupta",
+    "timestamp": "2026-03-14T21:47:03.967Z",
+    "courseId": "DATA233",
+    "chatType": "section"
+  },
+  {
+    "text": "so let's not prepare for it",
+    "studentId": "K1004",
+    "studentName": "Vikram Malhotra",
+    "timestamp": "2026-03-14T21:49:53.866Z",
+    "courseId": "DATA233",
+    "chatType": "section"
+  },
+  {
+    "text": "yaa sure",
+    "studentId": "K1001",
+    "studentName": "Ananya Patel",
+    "timestamp": "2026-03-14T21:50:26.516Z",
+    "courseId": "DATA233",
+    "chatType": "section"
+  }
+]

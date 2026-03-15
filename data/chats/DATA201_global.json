@@ -1,0 +1,20 @@
+[
+  {
+    "text": "I think other section professor need to slow down",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-15T02:16:26.564Z",
+    "courseId": "DATA201",
+    "chatType": "global"
+  },
+  {
+    "text": "please don't don't talk to aarjav",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-15T08:45:04.710Z",
+    "courseId": "DATA201",
+    "chatType": "global"
+  }
+]

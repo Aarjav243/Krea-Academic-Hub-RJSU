@@ -34,6 +34,7 @@
             padding: 2px;
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             opacity: 0;
@@ -159,9 +160,100 @@
         ::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
 
         #state-course { display: none; opacity: 0; }
+        #state-login { display: flex; opacity: 1; }
+        
+        /* API Explorer Panel */
+        .api-explorer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #E2E8F0;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .api-explorer.collapsed {
+            width: 160px;
+            height: 48px;
+            overflow: hidden;
+        }
+        .api-explorer-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .api-log-entry {
+            padding: 8px 16px;
+            font-size: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .api-log-key { color: #3B82F6; font-weight: bold; }
+        .api-log-val { color: #10B981; }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased bg-[#F9FAFB] min-h-screen">
+
+<!-- STATE 0: LOGIN -->
+<section id="state-login" class="fixed inset-0 z-[100] bg-[#F9FAFB] flex items-center justify-center p-6">
+    <div class="luxury-card-container w-full max-w-md">
+        <div class="luxury-card p-10 rounded-[32px] shadow-2xl relative overflow-hidden">
+            <!-- Decorative logo -->
+            <div class="w-16 h-16 certificate-ribbon rounded-2xl flex items-center justify-center text-white text-3xl font-extrabold mb-8 mx-auto shadow-lg transform -rotate-3">K</div>
+            
+            <h1 class="text-3xl font-bold text-center text-gray-900 mb-2 tracking-tight">KreaAcademicHub</h1>
+            <p class="text-center text-gray-400 text-sm mb-10 font-medium">Please sign in to your dashboard</p>
+            
+            <form id="loginForm" class="space-y-5" onsubmit="handleLogin(event)">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Krea Email ID</label>
+                    <input type="text" id="loginEmail" required autocomplete="username" placeholder="Email (firstname_lastname...) or Full Name" 
+                           class="w-full bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-blue-100 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Password</label>
+                    <input type="password" id="loginPass" required autocomplete="current-password" placeholder="••••••••" 
+                           class="w-full bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-blue-100 outline-none transition-all">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white rounded-xl py-4 font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-[1.02] transition-all transform active:scale-95 magnetic mt-4">
+                    Sign In
+                </button>
+            </form>
+            
+            <div id="loginError" class="hidden mt-6 text-sm text-center text-rose-500 font-medium bg-rose-50 p-3 rounded-lg border border-rose-100"></div>
+            
+            <p class="text-[10px] text-center text-gray-300 mt-8 uppercase tracking-widest font-bold">University Secure Portal • 2026</p>
+        </div>
+    </div>
+</section>
+
+<!-- API Explorer Panel -->
+<div class="api-explorer collapsed" id="apiExplorer">
+    <div class="api-explorer-header" onclick="toggleExplorer()">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span class="text-[10px] font-bold uppercase tracking-widest">API Explorer</span>
+        </div>
+        <svg id="explorerChevron" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+    </div>
+    <div class="p-4 space-y-3" id="apiLogs">
+        <div class="api-log-entry">
+            <span class="api-log-key">X-API-KEY:</span> 
+            <span class="api-log-val" id="displayApiKey">None</span>
+        </div>
+        <div id="requestLogContainer" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+            <!-- Logs will appear here -->
+        </div>
+    </div>
+</div>
 
 <header class="glass-header fixed top-0 w-full z-50 px-8 py-4 flex justify-between items-center">
     <div class="flex items-center gap-2 cursor-pointer magnetic" onclick="goToDashboard()">
@@ -179,13 +271,16 @@
                 <option value="alumni">Alumni</option>
             </select>
         </div>
-        <div class="flex items-center gap-3 border-l pl-6 border-gray-100 magnetic">
+        <div class="flex items-center gap-3 border-l pl-6 border-gray-100 group relative">
             <div class="text-right">
-                <p class="text-sm font-semibold" id="userName">Aarjav Jain</p>
-                <p class="text-xs text-gray-400" id="userRoleDisplay">Student</p>
+                <p class="text-sm font-semibold" id="userName">Student Name</p>
+                <div class="flex items-center justify-end gap-2">
+                    <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Student</p>
+                    <button onclick="logout()" class="text-[10px] text-gray-400 hover:text-red-500 font-bold uppercase tracking-widest transition-colors border-l pl-2 border-gray-100">Logout</button>
+                </div>
             </div>
-            <div class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 font-medium overflow-hidden shadow-inner">
-                AJ
+            <div id="userInitials" class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 font-bold overflow-hidden shadow-inner">
+                ??
             </div>
         </div>
     </div>
@@ -323,20 +418,19 @@
             <div class="space-y-6 flex-1 flex flex-col justify-center">
                 <!-- Minor Credits -->
                 <div class="flex items-center gap-6 group cursor-pointer">
-                    <div class="w-20 h-20 relative circular-progress amber">
+                    <div id="creditRing-minor" class="w-20 h-20 relative circular-progress amber">
                         <svg width="80" height="80">
                             <circle class="bg" cx="40" cy="40" r="36"></circle>
-                            <!-- 18 / 32 = 56% -> offset 99.4 -->
-                            <circle class="prog" cx="40" cy="40" r="36" data-target="99.4" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="226" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
                         </svg>
                         <div class="progress-text">
-                            <span class="text-lg font-bold text-gray-800 leading-none">18</span>
+                            <span class="text-lg font-bold text-gray-800 leading-none">0</span>
                             <span class="text-[9px] font-bold text-gray-400 uppercase">/ 32</span>
                         </div>
                     </div>
                     <div>
                         <h4 class="font-bold text-gray-800 group-hover:text-yellow-600 transition-colors">Minor Credits</h4>
-                        <p class="text-sm text-gray-500">Economics</p>
+                        <p id="minorSubject" class="text-sm text-gray-500">Economics</p>
                     </div>
                 </div>
                 
@@ -344,35 +438,33 @@
                 
                 <!-- Major Credits -->
                 <div class="flex items-center gap-6 group cursor-pointer">
-                    <div class="w-20 h-20 relative circular-progress indigo">
+                    <div id="creditRing-major" class="w-20 h-20 relative circular-progress indigo">
                         <svg width="80" height="80">
                             <circle class="bg" cx="40" cy="40" r="36"></circle>
-                            <!-- 32 / 80 = 40% -> offset 135.6 -->
-                            <circle class="prog" cx="40" cy="40" r="36" data-target="135.6" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="226" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
                         </svg>
                         <div class="progress-text">
-                            <span class="text-lg font-bold text-gray-800 leading-none">32</span>
+                            <span class="text-lg font-bold text-gray-800 leading-none">0</span>
                             <span class="text-[9px] font-bold text-gray-400 uppercase">/ 80</span>
                         </div>
                     </div>
                     <div>
                         <h4 class="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">Major Credits</h4>
-                        <p class="text-sm text-gray-500">Data Science</p>
+                        <p id="majorSubject" class="text-sm text-gray-500">Data Science</p>
                     </div>
                 </div>
-
+                
                 <hr class="border-gray-50">
-
+                
                 <!-- KCCS / 1st Year -->
                 <div class="flex items-center gap-6 group cursor-pointer">
-                    <div class="w-20 h-20 relative circular-progress">
+                    <div id="creditRing-kccs" class="w-20 h-20 relative circular-progress">
                         <svg width="80" height="80">
                             <circle class="bg" cx="40" cy="40" r="36"></circle>
-                            <!-- 48 / 48 = 100% -> offset 0 -->
-                            <circle class="prog" cx="40" cy="40" r="36" data-target="0" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
+                            <circle class="prog" cx="40" cy="40" r="36" data-target="226" style="stroke-dasharray: 226; stroke-dashoffset: 226;"></circle>
                         </svg>
                         <div class="progress-text">
-                            <span class="text-lg font-bold text-gray-800 leading-none">48</span>
+                            <span class="text-lg font-bold text-gray-800 leading-none">0</span>
                             <span class="text-[9px] font-bold text-gray-400 uppercase">/ 48</span>
                         </div>
                     </div>
@@ -381,6 +473,7 @@
                         <p class="text-sm text-gray-500">First Year Core</p>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -389,11 +482,11 @@
             <div class="flex justify-between items-end mb-6">
                 <div>
                     <h3 class="text-lg font-bold text-gray-900 mb-1">Grades Vault</h3>
-                    <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Aarjav Jain • B.Sc (Hons) Data Science</p>
+                    <p id="vaultStudentInfo" class="text-xs font-medium text-gray-400 uppercase tracking-widest">Student Name • Degree</p>
                 </div>
                 <div class="text-right">
                     <span class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none">Cumulative CGPA</span>
-                    <span class="text-3xl font-bold text-gray-900">9.42</span>
+                    <span id="displayCGPA" class="text-3xl font-bold text-gray-900">0.00</span>
                 </div>
             </div>
 
@@ -402,64 +495,186 @@
                 <div>
                     <h4 class="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-4 border-b border-blue-50 pb-2 flex justify-between items-center">
                         <span>Trimester 1</span>
-                        <span class="text-gray-400 font-medium normal-case">Avg: 9.87</span>
+                        <span id="tri1-avg" class="text-gray-400 font-medium normal-case">Avg: 0.00</span>
                     </h4>
                     <table class="w-full text-left grades-table">
-                        <tbody class="divide-y divide-gray-50">
-                            <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">DATA 201</td>
-                                <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
-                                <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
-                            </tr>
-                            <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">ECON 201</td>
-                                <td class="py-3 text-right"><span class="grade-badge grade-a scale-75 shadow-sm">A</span></td>
-                                <td class="py-3 text-right text-xs font-bold text-gray-500">9.6</td>
-                            </tr>
-                            <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">DATA 205</td>
-                                <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
-                                <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
-                            </tr>
+                        <tbody id="tri1-body" class="divide-y divide-gray-50">
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Trimester 2 -->
                 <div>
                     <h4 class="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-4 border-b border-indigo-50 pb-2 flex justify-between items-center">
                         <span>Trimester 2</span>
-                        <span class="text-gray-400 font-medium normal-case">Avg: 9.43</span>
+                        <span id="tri2-avg" class="text-gray-400 font-medium normal-case">Avg: 0.00</span>
                     </h4>
                     <table class="w-full text-left grades-table">
-                        <tbody class="divide-y divide-gray-50">
-                            <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">DATA 233</td>
-                                <td class="py-3 text-right"><span class="grade-badge grade-a-plus scale-75 shadow-sm">A+</span></td>
-                                <td class="py-3 text-right text-xs font-bold text-gray-500">10.0</td>
-                            </tr>
-                            <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">DATA 202</td>
-                                <td class="py-3 text-right"><span class="grade-badge grade-a scale-75 shadow-sm">A</span></td>
-                                <td class="py-3 text-right text-xs font-bold text-gray-500">9.6</td>
-                            </tr>
-                            <tr class="group cursor-pointer">
-                                <td class="py-3 text-sm font-bold text-gray-900">ECON 202</td>
-                                <td class="py-3 text-right"><span class="grade-badge grade-b scale-75 shadow-sm">B+</span></td>
-                                <td class="py-3 text-right text-xs font-bold text-gray-500">8.7</td>
-                            </tr>
+                        <tbody id="tri2-body" class="divide-y divide-gray-50">
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="mt-auto pt-6 text-center">
-                <span class="text-[10px] text-blue-600 font-bold tracking-widest uppercase cursor-pointer hover:text-blue-800 transition-colors magnetic inline-block">Download Full Academic Transcript (PDF)</span>
+            <div class="mt-auto pt-8 border-t border-gray-50 flex justify-center">
+                <button onclick="downloadCSV()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 ring-4 ring-blue-50/50 transform hover:-translate-y-0.5 active:scale-95">
+                    Download Full Academic Transcript (CSV)
+                </button>
             </div>
         </div>
 
     </div>
 </main>
+
+<!-- STATE 1.5: PROFESSOR PANEL -->
+<section id="state-professor" class="fixed inset-0 pt-20 flex hidden bg-[#F9FAFB] z-50">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-gray-100 bg-white flex flex-col pt-8 z-10">
+        <div class="px-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 leading-tight tracking-tight">Faculty Panel</h2>
+            <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">Your Assigned Courses</p>
+        </div>
+        
+        <nav id="profCourseList" class="flex-1 px-3 space-y-2">
+            <!-- Courses load here -->
+        </nav>
+
+        <div class="p-6 border-t border-gray-100">
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:text-rose-600 hover:bg-rose-50 transition-all group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                Sign Out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-gray-50 overflow-hidden relative shadow-inner flex flex-col">
+        <!-- Top Bar with Tabs -->
+        <header class="bg-white px-8 py-5 border-b border-gray-100 flex justify-between items-center outline-none">
+            <div id="profHeaderInfo" class="flex items-center gap-6">
+                <div>
+                    <h2 id="currentProfCourse" class="text-xl font-bold tracking-tight">Select a Course</h2>
+                    <p id="profSubtitle" class="text-xs text-gray-400 mt-1">Course Management Dashboard</p>
+                </div>
+            </div>
+
+            <nav class="flex gap-1 bg-gray-50 p-1 rounded-xl">
+                <button onclick="switchProfTab('roster')" class="prof-tab-btn px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all active" data-ptab="roster">Roster</button>
+                <button onclick="switchProfTab('attendance')" class="prof-tab-btn px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all" data-ptab="attendance">Attendance</button>
+                <button onclick="switchProfTab('chat')" class="prof-tab-btn px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all" data-ptab="chat">Course Chat</button>
+                <button onclick="switchProfTab('office')" class="prof-tab-btn px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all" data-ptab="office">Office Hours</button>
+                <button onclick="switchProfTab('certs')" class="prof-tab-btn px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all" data-ptab="certs">Certificates</button>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end mr-2">
+                    <span id="profDisplayName" class="text-xs font-bold text-gray-900">Faculty</span>
+                    <span class="text-[9px] text-blue-600 font-bold uppercase tracking-tighter">Verified Profile</span>
+                </div>
+                <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all active:scale-95 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8">
+            <!-- Tab: Student Roster -->
+            <div id="ptab-roster" class="ptab-content">
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Student</th>
+                                <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">CGPA</th>
+                                <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Attendance %</th>
+                                <th class="px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profRosterBody" class="divide-y divide-gray-50">
+                            <!-- Roster loads here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Attendance Manager -->
+            <div id="ptab-attendance" class="ptab-content hidden">
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-8">
+                    <div id="attendanceGrid" class="space-y-6">
+                        <!-- Dates and student toggles load here -->
+                        <p class="text-gray-400 text-center">Select a course to manage attendance</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Chat Moderation -->
+            <div id="ptab-chat" class="ptab-content hidden flex flex-col h-full bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="flex-1 flex overflow-hidden">
+                    <div class="w-1/2 border-r border-gray-100 flex flex-col">
+                        <div class="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600">Section Doubts</span>
+                        </div>
+                        <div id="prof-section-chat" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+                        <div class="p-4 border-t border-gray-100 flex gap-2">
+                            <input id="prof-sec-input" onkeypress="if(event.key==='Enter') profSendMessage('section')" type="text" placeholder="Post as faculty..." class="flex-1 bg-gray-50 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-100 transition-all">
+                            <button onclick="profSendMessage('section')" class="bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 active:scale-95 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="w-1/2 flex flex-col">
+                        <div class="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Global Course Chat</span>
+                        </div>
+                        <div id="prof-global-chat" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+                        <div class="p-4 border-t border-gray-100 flex gap-2">
+                            <input id="prof-glob-input" onkeypress="if(event.key==='Enter') profSendMessage('global')" type="text" placeholder="Post announcement..." class="flex-1 bg-gray-50 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-100 transition-all">
+                            <button onclick="profSendMessage('global')" class="bg-indigo-600 text-white p-2.5 rounded-xl hover:bg-indigo-700 active:scale-95 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Office Hours Manager -->
+            <div id="ptab-office" class="ptab-content hidden">
+                <div class="max-w-xl bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+                    <h3 class="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wider">Schedule Office Hours</h3>
+                    <div class="flex flex-col md:flex-row gap-4 mb-8">
+                        <div class="flex-1 flex flex-col gap-1.5">
+                            <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Day</label>
+                            <select id="officeDay" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-100">
+                                <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option>
+                            </select>
+                        </div>
+                        <div class="w-32 flex flex-col gap-1.5">
+                            <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Start</label>
+                            <input id="officeStart" type="time" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-100">
+                        </div>
+                        <div class="w-32 flex flex-col gap-1.5">
+                            <label class="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">End</label>
+                            <input id="officeEnd" type="time" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-100">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="addOfficeSlot()" class="h-[44px] bg-blue-600 text-white px-8 rounded-xl font-bold text-xs uppercase tracking-widest shadow-md hover:bg-blue-700 transition-all active:scale-95">Add</button>
+                        </div>
+                    </div>
+                    <div id="officeSlotList" class="space-y-3">
+                        <!-- Slots load here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Certificates Approval -->
+            <div id="ptab-certs" class="ptab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="profCertList">
+                    <!-- Students eligible for certs load here -->
+                </div>
+            </div>
+        </div>
+    </main>
+</section>
 
 <!-- STATE 2: COURSE VIEW -->
 <section id="state-course" class="fixed inset-0 pt-20 flex">
@@ -513,14 +728,7 @@
                 </div>
             </div>
             <div class="flex-1 p-6 overflow-y-auto space-y-6" id="section-chat-messages">
-                <div class="flex flex-col items-start message-anim">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-1 ml-2">Student: Ananya P.</span>
-                    <div class="chat-bubble received shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-gray-100">Does anyone understand the recursion homework?</div>
-                </div>
-                <div class="flex flex-col items-end message-anim">
-                    <span class="text-[10px] text-blue-600 font-bold uppercase mb-1 mr-2">You</span>
-                    <div class="chat-bubble sent shadow-[0_8px_16px_rgba(59,130,246,0.2)]">Try breaking it into a base case first!</div>
-                </div>
+                <!-- Messages will load here -->
             </div>
             <!-- Chat Input -->
             <div class="p-4 bg-white border-t border-gray-100 flex gap-4 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
@@ -538,13 +746,7 @@
                 <p class="text-xs text-gray-400 mt-1">All sections • Syllabus & Pacing</p>
             </div>
             <div class="flex-1 p-6 overflow-y-auto space-y-6" id="global-chat-messages">
-                <div class="bg-blue-50/50 border border-blue-100 p-5 rounded-2xl text-blue-800 text-sm shadow-sm backdrop-blur-sm message-anim">
-                    <strong>Notice:</strong> Midterm exam dates are moved to next Thursday.
-                </div>
-                <div class="flex flex-col items-start message-anim">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-1 ml-2">Prof. Rakesh</span>
-                    <div class="chat-bubble received bg-white border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)]">I've posted the updated syllabus in the Global drive.</div>
-                </div>
+                <!-- Messages will load here -->
             </div>
             <!-- Missing Input Added Here -->
             <div class="p-4 bg-white border-t border-gray-100 flex gap-4 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
@@ -578,41 +780,20 @@
             <div class="flex-1 p-8 overflow-y-auto bg-gray-50/50">
                 <!-- GRID: STUDENT VIEW -->
                 <div id="calendar-student-view" class="grid grid-cols-5 gap-4 h-full transition-opacity duration-500">
-                    <div class="space-y-4">
+                    <div class="space-y-4" data-day="monday">
                         <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Mon</div>
-                        <div class="h-24 rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 bg-gray-50 p-2 opacity-60">
-                            <span class="text-xs text-gray-400 font-semibold">Booked</span>
-                        </div>
-                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
-                            <span class="text-[11px] text-blue-600 font-bold mb-1">10:00 AM</span>
-                            <span class="text-xs font-semibold text-gray-700">TA Neha</span>
-                        </div>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-4" data-day="tuesday">
                         <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Tue</div>
-                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
-                            <span class="text-[11px] text-blue-600 font-bold mb-1">2:30 PM</span>
-                            <span class="text-xs font-semibold text-gray-700">Prof. Rakesh</span>
-                        </div>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-4" data-day="wednesday">
                         <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Wed</div>
-                        <div class="h-24 p-2"></div>
-                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
-                            <span class="text-[11px] text-blue-600 font-bold mb-1">11:00 AM</span>
-                            <span class="text-xs font-semibold text-gray-700">TA Rahul</span>
-                        </div>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-4" data-day="thursday">
                         <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Thu</div>
-                        <div class="magnetic h-24 bg-white rounded-2xl shadow-sm border border-blue-100 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 flex flex-col items-center justify-center p-2 cursor-pointer transition-all">
-                            <span class="text-[11px] text-blue-600 font-bold mb-1">4:00 PM</span>
-                            <span class="text-xs font-semibold text-gray-700">Prof. Rakesh</span>
-                        </div>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-4" data-day="friday">
                         <div class="text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">Fri</div>
-                        <div class="h-24 p-2"></div>
                     </div>
                 </div>
 
@@ -786,331 +967,916 @@
 </footer>
 
 <script>
-    // --- ANIMATION UTILS ---
+    // --- DATA STATE ---
+    let currentUser = null;
+    let currentToken = localStorage.getItem('krea_token');
+    let currentApiKey = localStorage.getItem('krea_apiKey');
+    let currentCourseId = null;
 
-    // Split text for dynamic word reveal
-    function wrapWords(selector) {
-        const el = document.querySelector(selector);
-        if(!el) return;
-        const text = el.innerText;
-        el.innerHTML = text.split(' ').map(word => 
-            `<span class="word-wrap"><span class="word-inner">${word}</span></span>`
-        ).join(' ');
+    // --- API UTILS ---
+    async function apiFetch(endpoint, options = {}) {
+        const apiKey = localStorage.getItem('krea_apiKey');
+        const token = localStorage.getItem('krea_token');
+        
+        let url = endpoint;
+        if (!options.method || options.method === 'GET') {
+            const separator = url.includes('?') ? '&' : '?';
+            url += `${separator}t=${Date.now()}`;
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-API-Key': apiKey,
+            ...options.headers
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        logApiRequest(url, options.method || 'GET');
+
+        try {
+            const response = await fetch(url, { ...options, headers });
+            const contentType = response.headers.get('Content-Type') || '';
+
+            if (!response.ok) {
+                let errorText = "";
+                try {
+                    const errorDetail = await response.clone().json();
+                    errorText = errorDetail.error || errorDetail.message || JSON.stringify(errorDetail);
+                } catch(e) {
+                    errorText = response.statusText;
+                }
+                console.error(`[API Error] ${response.status}: ${errorText}`);
+                return { success: false, error: response.status, details: errorText };
+            }
+
+            if (contentType.includes('application/json')) {
+                return await response.json();
+            } else {
+                return { success: true, text: await response.text() };
+            }
+        } catch (e) {
+            console.error('[Fetch Error]:', e);
+            return { success: false, error: 'NETWORK_ERROR', details: e.message };
+        }
     }
 
-    // Interactive 3D tilt for cards
-    document.querySelectorAll('.luxury-card-container').forEach(container => {
-        const card = container.querySelector('.luxury-card');
+    function logApiRequest(endpoint, method) {
+        const container = document.getElementById('requestLogContainer');
+        if (!container) return;
+        const entry = document.createElement('div');
+        entry.className = 'api-log-entry border-l-2 border-blue-500 pl-2 bg-white/5 mb-2 py-2';
+        entry.innerHTML = `
+            <div class="text-blue-400 font-bold">${method} ${endpoint}</div>
+            <div class="text-[8px] opacity-60">${new Date().toLocaleTimeString()}</div>
+        `;
+        container.prepend(entry);
+    }
+
+    // --- AUTH ---
+    async function handleLogin(e) {
+        if (e) e.preventDefault();
+        console.log("Login started...");
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPass').value;
+        const errorEl = document.getElementById('loginError');
         
-        container.addEventListener('mousemove', e => {
-            const rect = container.getBoundingClientRect();
+        errorEl.classList.add('hidden');
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await res.json();
+            console.log("Login Res:", data);
+            
+            if (data && data.token) {
+                localStorage.setItem('krea_token', data.token);
+                localStorage.setItem('krea_apiKey', data.apiKey);
+                localStorage.setItem('krea_role', data.role);
+                currentToken = data.token;
+                currentApiKey = data.apiKey;
+                await initApp();
+            } else {
+                errorEl.innerText = data ? data.message : 'Login failed';
+                errorEl.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error("Login Crash:", err);
+            errorEl.innerText = "Connection failed. Is the server running?";
+            errorEl.classList.remove('hidden');
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('krea_token');
+        localStorage.removeItem('krea_apiKey');
+        localStorage.removeItem('krea_role');
+        location.reload();
+    }
+
+    // --- APP INIT ---
+    async function initApp() {
+        if (!currentToken) {
+            document.getElementById('state-login').style.display = 'flex';
+            gsap.to('#state-login', { opacity: 1, duration: 0.5 });
+            return;
+        }
+
+        console.log("initApp: Fetching /api/me...");
+        const user = await apiFetch('/api/me');
+        if (!user || user.error) {
+            console.error("initApp: User fetch failed", user);
+            // Instead of full logout (which reloads), just show login screen
+            document.getElementById('state-login').style.display = 'flex';
+            gsap.to('#state-login', { opacity: 1, duration: 0.5 });
+            localStorage.clear();
+            currentToken = null;
+            return;
+        }
+
+        currentUser = user;
+        console.log("initApp: currentUser set", currentUser);
+        const role = localStorage.getItem('krea_role');
+        
+        document.getElementById('state-login').style.display = 'none';
+        
+        if (role === 'professor') {
+            document.getElementById('state-dashboard').style.display = 'none';
+            document.getElementById('state-professor').style.display = 'flex';
+            document.getElementById('profDisplayName').innerText = user.name;
+            renderProfessorPanel();
+        } else {
+            document.getElementById('state-professor').style.display = 'none';
+            document.getElementById('state-dashboard').style.display = 'block';
+            renderDashboard();
+        }
+        
+        // Populate header
+        document.getElementById('userName').innerText = user.name;
+        document.getElementById('displayApiKey').innerText = currentApiKey;
+        
+        // Dynamic initials
+        const parts = user.name.split(' ');
+        const initials = parts[0][0] + (parts[parts.length - 1][0] || '');
+        document.getElementById('userInitials').innerText = initials.toUpperCase();
+    }
+
+    function updateRole() {
+        console.log("Role update triggered but currently handled by auth role.");
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Only run initApp if we likely have a session, preventing redundant reloads
+        if (localStorage.getItem('krea_token')) {
+            initApp();
+        } else {
+            document.getElementById('state-login').style.display = 'flex';
+            gsap.to('#state-login', { opacity: 1, duration: 0.5 });
+        }
+        setupInteractions();
+    });
+
+    function setupInteractions() {
+        // Chat Enter Listeners
+        const sectionInput = document.getElementById('section-chat-input');
+        const globalInput = document.getElementById('global-chat-input');
+        
+        if (sectionInput) {
+            sectionInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage('section-chat-input', 'section-chat-messages');
+                }
+            });
+        }
+        
+        if (globalInput) {
+            globalInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage('global-chat-input', 'global-chat-messages');
+                }
+            });
+        }
+
+        // Magnetic Effect
+        document.querySelectorAll('.magnetic').forEach(el => {
+            el.addEventListener('mousemove', (e) => {
+                const rect = el.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                gsap.to(el, { x: x * 0.3, y: y * 0.3, duration: 0.4, ease: "power2.out" });
+            });
+            el.addEventListener('mouseleave', () => {
+                gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+            });
+        });
+
+        // Tilt Effect (handled dynamically for new cards)
+        document.addEventListener('mousemove', (e) => {
+            const card = e.target.closest('.luxury-card');
+            if (!card) return;
+            const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            gsap.to(card, { rotateX, rotateY, scale: 1.02, duration: 0.5, ease: "power2.out" });
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const card = e.target.closest('.luxury-card');
+            if (!card) return;
+            gsap.to(card, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+        });
+
+        // Module Completion Tracking
+        document.querySelectorAll('.module-check').forEach(check => {
+            check.addEventListener('change', updateModuleProgress);
+        });
+
+        const viewCertBtn = document.querySelector('.certificate-ribbon.text-white.px-8.py-3\\.5');
+        if (viewCertBtn) {
+            viewCertBtn.addEventListener('click', () => {
+                alert(`Official Certificate for ${currentCourseId} has been added to your academic record!`);
+            });
+        }
+    }
+
+    let originalCertHTML = ''; // Global backup of certificate UI
+
+    async function updateModuleProgress() {
+        const checks = document.querySelectorAll('.module-check');
+        const checkedCount = Array.from(checks).filter(c => c.checked).length;
+        const total = checks.length;
+        const certContainer = document.getElementById('certContainer');
+
+        if (checkedCount === total) {
+            const certData = await apiFetch(`/api/cert-status/${currentCourseId}`);
+            const status = certData.status || 'pending';
             
-            // Adjust divisor for effect strength (larger = more subtle)
-            const rotateX = ((y - centerY) / centerY) * -8; 
-            const rotateY = ((x - centerX) / centerX) * 8;
+            if (status === 'disapproved') {
+                certContainer.innerHTML = `
+                    <div class="bg-rose-50 border border-rose-100 p-8 rounded-3xl flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-rose-100 rounded-2xl flex items-center justify-center text-rose-600 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-rose-900 mb-2">Certificate Disapproved</h3>
+                        <p class="text-sm text-rose-600">Your certificate for this course has been disapproved by Professor ${certData.by || 'the instructor'}. Please contact them for clarification.</p>
+                    </div>
+                `;
+            } else if (status === 'pending') {
+                certContainer.innerHTML = `
+                    <div class="bg-gray-50 border border-gray-100 p-8 rounded-3xl flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4 animate-pulse">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Pending Approval</h3>
+                        <p class="text-sm text-gray-500">All modules completed! Your certificate is currently being reviewed by the professor.</p>
+                    </div>
+                `;
+            } else {
+                // Restore original certificate design if approved
+                certContainer.innerHTML = originalCertHTML;
+            }
             
-            gsap.to(card, {
-                rotateX: rotateX,
-                rotateY: rotateY,
-                duration: 0.4,
-                ease: "power2.out"
-            });
-        });
-        
-        container.addEventListener('mouseleave', () => {
-            gsap.to(card, {
-                rotateX: 0,
-                rotateY: 0,
-                duration: 0.6,
-                ease: "power3.out"
-            });
-        });
-    });
-
-    // Magnetic buttons & icons
-    function bindMagnetics() {
-        document.querySelectorAll('.magnetic').forEach(btn => {
-            // Remove old listeners to avoid duplicates if re-binding
-            const clone = btn.cloneNode(true);
-            btn.parentNode.replaceChild(clone, btn);
-
-            clone.addEventListener('mousemove', (e) => {
-                const rect = clone.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                
-                gsap.to(clone, {
-                    x: x * 0.3,
-                    y: y * 0.3,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
-            });
-            clone.addEventListener('mouseleave', () => {
-                gsap.to(clone, {
-                    x: 0,
-                    y: 0,
-                    duration: 0.5,
-                    ease: "elastic.out(1, 0.3)"
-                });
-            });
-        });
-    }
-    
-    // Bind magnetics initially
-    bindMagnetics();
-
-    // --- LOGIC ---
-
-    function openCourse(id, subtitle) {
-        document.getElementById('courseTitle').innerText = id;
-        document.getElementById('courseSubtitle').innerText = subtitle;
-        document.getElementById('certCourseName').innerText = id;
-
-        // Reset sidebar tabs to section-chat
-        switchTab('section-chat', true);
-
-        const tl = gsap.timeline();
-        tl.to('#state-dashboard', { opacity: 0, scale: 0.98, duration: 0.4, ease: "power2.inOut" })
-          .set('#state-dashboard', { display: 'none' })
-          .set('#state-course', { display: 'flex' })
-          .fromTo('#state-course', 
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
-          );
-
-        // Animate chat messages inside the loaded tab
-        gsap.fromTo('.message-anim', 
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: "power2.out", delay: 0.3 }
-        );
-    }
-
-    function goToDashboard() {
-        const tl = gsap.timeline();
-        tl.to('#state-course', { opacity: 0, scale: 0.98, duration: 0.4, ease: "power2.inOut" })
-          .set('#state-course', { display: 'none' })
-          .set('#state-dashboard', { display: 'block' })
-          .fromTo('#state-dashboard', 
-            { opacity: 0, y: -20 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" }
-          );
-        
-        // Re-trigger course cards enter animation for flair
-        gsap.fromTo('.luxury-card-container',
-            { opacity: 0, y: 40 },
-            { opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: "power3.out", delay: 0.4 }
-        );
-    }
-
-    // Re-implemented Role Switching Logic to handle component visibility
-    function updateRole() {
-        const role = document.getElementById('roleSelector').value;
-        const display = document.getElementById('userRoleDisplay');
-        const studentGrid = document.getElementById('student-components-grid');
-        
-        display.innerText = role.charAt(0).toUpperCase() + role.slice(1);
-        gsap.fromTo(display, { opacity: 0, y: -5 }, { opacity: 1, y: 0, duration: 0.3 });
-        
-        if (role !== 'student') {
-            // Hide student specific widgets
-            gsap.to('.student-widget', { 
-                opacity: 0, 
-                y: 20, 
-                stagger: 0.1, 
-                duration: 0.4, 
-                ease: "power2.in",
-                onComplete: () => {
-                   if(studentGrid) studentGrid.style.display = 'none';
+            certContainer.classList.remove('hidden');
+            gsap.to(certContainer, { 
+                scale: 1, 
+                opacity: 1, 
+                duration: 0.8, 
+                ease: "back.out(1.7)",
+                onStart: () => {
+                    const icon = document.querySelector('.cert-icon');
+                    if(icon) gsap.from(icon, { scale: 0, rotate: -180, duration: 1, ease: "elastic.out(1, 0.3)" });
+                    const text = document.querySelector('.cert-text');
+                    if(text) gsap.from(text, { y: 20, opacity: 0, stagger: 0.1, duration: 0.6, delay: 0.3 });
                 }
             });
         } else {
-            // Show student widgets
-            if(studentGrid) studentGrid.style.display = 'grid';
-            gsap.fromTo('.student-widget', 
-                { opacity: 0, y: 30 }, 
-                { opacity: 1, y: 0, stagger: 0.15, duration: 0.6, ease: "back.out(1.2)" }
-            );
-            
-            // Re-trigger progress animations when switching back to student form
-            setTimeout(() => {
-                document.querySelectorAll('.prog').forEach(p => {
-                    p.style.transition = 'none';
-                    p.style.strokeDashoffset = '226';
-                    // Trigger reflow
-                    void p.offsetWidth;
-                    p.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)';
-                    p.style.strokeDashoffset = p.getAttribute('data-target');
-                });
-            }, 50);
+            gsap.to(certContainer, { scale: 0.9, opacity: 0, duration: 0.4, onComplete: () => certContainer.classList.add('hidden') });
         }
     }
 
-    function switchTab(tabId, instant = false) {
-        const currentActive = document.querySelector('.tab-content:not(.hidden)');
-        const nextTab = document.getElementById('tab-' + tabId);
-        
-        if (currentActive === nextTab && !instant) return;
+    function toggleExplorer() {
+        const el = document.getElementById('apiExplorer');
+        const chev = document.getElementById('explorerChevron');
+        el.classList.toggle('collapsed');
+        chev.style.transform = el.classList.contains('collapsed') ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
 
-        // Update active class
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-tab') === tabId) item.classList.add('active');
+    // --- DASHBOARD RENDER ---
+    function renderDashboard() {
+        console.log("renderDashboard: Starting...");
+        try {
+            const firstName = (currentUser.name && currentUser.name.split(' ')[0]) || "Student";
+            document.getElementById('main-heading').innerText = `Welcome back, ${firstName}.`;
+            wrapWords('#main-heading');
+            gsap.from('.word-inner', { y: 100, opacity: 0, duration: 1, stagger: 0.08, ease: "power4.out" });
+
+            const grid = document.getElementById('courseGrid');
+            grid.innerHTML = '';
+            currentUser.active_courses.forEach(id => {
+                grid.innerHTML += `
+                    <div class="luxury-card-container">
+                        <div class="luxury-card h-full p-6 rounded-[24px] cursor-pointer group" onclick="openCourse('${id}', 'Active Enrollment')">
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                            </div>
+                            <h3 class="text-xl font-bold mb-1">${id}</h3>
+                            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-auto">Open Sidebar</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const credits = currentUser.credits;
+            if (credits) {
+                updateCircleProgress('#creditRing-minor .prog', (credits.minor.current / credits.minor.target) * 100, credits.minor.current, credits.minor.target);
+                updateCircleProgress('#creditRing-major .prog', (credits.major.current / credits.major.target) * 100, credits.major.current, credits.major.target);
+                updateCircleProgress('#creditRing-kccs .prog', (credits.kccs.current / credits.kccs.target) * 100, credits.kccs.current, credits.kccs.target);
+            }
+
+            if (document.getElementById('majorSubject')) document.getElementById('majorSubject').innerText = currentUser.major;
+            if (document.getElementById('minorSubject')) document.getElementById('minorSubject').innerText = currentUser.minor;
+            if (document.getElementById('vaultStudentInfo')) document.getElementById('vaultStudentInfo').innerText = `${currentUser.name} • ${currentUser.major} Major`;
+            if (document.getElementById('displayCGPA')) document.getElementById('displayCGPA').innerText = currentUser.cgpa;
+            
+            currentUser.trimesters.forEach((tri, idx) => {
+                const tableBody = document.getElementById(`tri${idx+1}-body`);
+                const avgEl = document.getElementById(`tri${idx+1}-avg`);
+                if(avgEl) avgEl.innerText = `Avg: ${tri.avg}`;
+                if(tableBody) {
+                    tableBody.innerHTML = '';
+                    tri.courses.forEach(c => {
+                        tableBody.innerHTML += `
+                            <tr class="group cursor-pointer">
+                                <td class="py-3 text-sm font-bold text-gray-900">${c.id}</td>
+                                <td class="py-3 text-right"><span class="grade-badge ${getGradeClass(c.grade)} scale-75 shadow-sm">${c.grade}</span></td>
+                                <td class="py-3 text-right text-xs font-bold text-gray-500">${c.gp.toFixed(1)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("renderDashboard Full Crash:", e);
+        }
+    }
+
+    function getGradeClass(grade) {
+        if(grade.startsWith('A')) return 'grade-a';
+        if(grade.startsWith('B')) return 'grade-b';
+        return 'grade-a-minus';
+    }
+
+    function updateCircleProgress(selector, percent, val, target) {
+        const circle = document.querySelector(selector);
+        if(!circle) return;
+        const textVal = circle.closest('.circular-progress').querySelector('.leading-none');
+        const textTarget = circle.closest('.circular-progress').querySelector('.text-\\[9px\\]');
+        
+        const offset = 226 - (226 * percent / 100);
+        gsap.to(circle, { strokeDashoffset: offset, duration: 1.5, ease: "power4.out" });
+        textVal.innerText = val;
+        textTarget.innerText = `/ ${target}`;
+    }
+
+
+    async function loadChat(courseId, type) {
+        console.log(`Loading chat: ${courseId} ${type}`);
+        const messages = await apiFetch(`/api/chat/${courseId}/${type}`);
+        console.log(`Loaded ${messages ? messages.length : 0} messages`);
+        renderMessages(messages, `${type}-chat-messages`);
+    }
+
+    function renderMessages(messages, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (containerId === 'global-chat-messages') {
+            container.innerHTML = `<div class="bg-blue-50/50 border border-blue-100 p-5 rounded-2xl text-blue-800 text-sm shadow-sm backdrop-blur-sm message-anim"><strong>Notice:</strong> Midterm exam dates are moved to next Thursday.</div>`;
+        }
+        
+        messages.forEach(msg => {
+            const isMe = msg.studentId === currentUser.id;
+            const div = document.createElement('div');
+            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-4`;
+            div.innerHTML = `
+                <span class="text-[10px] ${isMe ? 'text-blue-600 mr-2' : 'text-gray-400 ml-2'} font-bold uppercase mb-1">${isMe ? 'You' : msg.studentName}</span>
+                <div class="chat-bubble ${isMe ? 'sent shadow-[0_8px_16px_rgba(59,130,246,0.2)]' : 'received shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-gray-100'}">
+                    ${msg.text}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage(inputId, containerId) {
+        const input = document.getElementById(inputId);
+        const type = inputId.split('-')[0]; // 'section' or 'global'
+        const text = input.value.trim();
+        console.log(`Sending message: ${text} to ${currentCourseId} ${type}`);
+        if(!text || !currentCourseId) return;
+
+        try {
+            const response = await fetch(`/api/chat/${currentCourseId}/${type}`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`,
+                    'X-API-Key': currentApiKey
+                },
+                body: JSON.stringify({ text })
+            });
+
+            const data = await response.json();
+            console.log('Send response:', data);
+            if (data.success) {
+                input.value = '';
+                loadChat(currentCourseId, type);
+            }
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+    }
+    async function fetchAttendance(courseId) {
+        const data = await apiFetch(`/api/attendance/${courseId}`);
+        if(!data) return;
+        const tableBody = document.querySelector('#tab-attendance tbody');
+        tableBody.innerHTML = '';
+        const presentCount = data.filter(r => r.status === 'Present').length;
+        const absentCount = data.length - presentCount;
+        document.querySelectorAll('.attendance-stat .text-3xl')[0].innerHTML = `${presentCount} <span class="text-sm text-gray-400 font-medium">/ ${data.length}</span>`;
+        document.querySelectorAll('.attendance-stat .text-3xl')[1].innerHTML = `${absentCount} <span class="text-sm text-gray-400 font-medium">/ ${data.length}</span>`;
+        data.forEach(record => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="px-8 py-4 text-sm font-semibold text-gray-700">${record.day}, ${record.date}</td>
+                <td class="px-8 py-4 text-right"><span class="text-xs font-bold ${record.status === 'Present' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'} px-3 py-1 rounded-full uppercase tracking-wider">${record.status}</span></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+        gsap.from('#tab-attendance tr', { opacity: 0, x: -20, stagger: 0.05, duration: 0.4 });
+    }
+
+    function goToDashboard() {
+        document.getElementById('state-course').style.display = 'none';
+        document.getElementById('state-dashboard').style.display = 'block';
+        gsap.from('#state-dashboard', { opacity: 0, duration: 0.5 });
+    }
+
+    async function downloadCSV() {
+        const response = await fetch('/api/download/csv', {
+            headers: { 'Authorization': `Bearer ${currentToken}`, 'X-API-Key': currentApiKey }
+        });
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentUser.name.replace(' ', '_')}_Grades.csv`;
+        a.click();
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById(`tab-${tab}`);
+        target.classList.remove('hidden');
+        gsap.fromTo(target, { opacity: 0 }, { opacity: 1, duration: 0.4 });
+        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        
+        if (tab === 'calendar') {
+            if (currentCourseId) {
+                console.log(`[Tab Switch] Refreshing Office Hours for ${currentCourseId}`);
+                fetchStudentOfficeHours(currentCourseId);
+            } else {
+                console.warn(`[Tab Switch] Cannot refresh office hours: currentCourseId is null`);
+            }
+        }
+    }
+
+    // --- PROFESSOR PANEL LOGIC ---
+    let currentProfCourseId = null;
+
+    function renderProfessorPanel() {
+        const list = document.getElementById('profCourseList');
+        list.innerHTML = '';
+        currentUser.courses.forEach(id => {
+            const div = document.createElement('div');
+            div.className = `px-4 py-3 rounded-xl text-sm font-bold cursor-pointer transition-all ${currentProfCourseId === id ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`;
+            div.innerText = id;
+            div.onclick = () => openProfCourse(id);
+            list.appendChild(div);
         });
 
-        if (instant) {
-            if (currentActive) {
-                currentActive.classList.add('hidden');
-                currentActive.style.opacity = '0';
+        if (currentUser.courses.length > 0 && !currentProfCourseId) {
+            openProfCourse(currentUser.courses[0]);
+        }
+    }
+
+    function switchProfTab(tab) {
+        document.querySelectorAll('.ptab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.prof-tab-btn').forEach(el => el.classList.remove('active'));
+        
+        const target = document.getElementById(`ptab-${tab}`);
+        target.classList.remove('hidden');
+        document.querySelector(`[data-ptab="${tab}"]`).classList.add('active');
+        
+        if (tab === 'chat') loadProfChat();
+        if (tab === 'office') loadOfficeSlots();
+        if (tab === 'certs') loadCertApprovals();
+    }
+
+    async function openProfCourse(id) {
+        currentProfCourseId = id;
+        document.getElementById('currentProfCourse').innerText = id;
+        renderProfessorPanel(); // refresh sidebar highlighting
+        await loadRoster(id);
+        
+        // Reset attendance view to guidance message when switching courses
+        document.getElementById('attendanceGrid').innerHTML = `
+            <div class="text-center py-12">
+                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                </div>
+                <h3 class="text-sm font-bold text-gray-900 mb-2">Manage Student Attendance</h3>
+                <p class="text-xs text-gray-400 max-w-xs mx-auto">To manage attendance, go to the <strong>ROSTER</strong> tab and click the <strong>MANAGE</strong> button next to any student's name.</p>
+                <button onclick="switchProfTab('roster')" class="mt-6 text-[10px] font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">Go to Roster</button>
+            </div>
+        `;
+    }
+
+    async function loadRoster(courseId) {
+        const roster = await apiFetch(`/api/professor/roster/${courseId}`);
+        const tbody = document.getElementById('profRosterBody');
+        tbody.innerHTML = '';
+        
+        if (!roster) return;
+
+        roster.sort((a, b) => b.attendancePct - a.attendancePct).forEach(s => {
+            const tr = document.createElement('tr');
+            tr.className = "group hover:bg-gray-50 transition-colors";
+            tr.dataset.studentId = s.id; // Add student ID to dataset for easy lookup
+            tr.innerHTML = `
+                <td class="px-8 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">${s.name[0]}</div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">${s.name}</p>
+                            <p class="text-[10px] text-gray-400">ID: ${s.id}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-8 py-4 text-sm font-bold text-gray-700">${s.cgpa}</td>
+                <td class="px-8 py-4 text-right">
+                    <div class="flex flex-col items-end">
+                        <span class="text-sm font-extrabold ${s.attendancePct < 75 ? 'text-rose-600' : 'text-emerald-600'}">${s.attendancePct}%</span>
+                        <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${s.presentCount} / ${s.totalClasses}</span>
+                    </div>
+                </td>
+                <td class="px-8 py-4 text-right">
+                    <button onclick="openAttendanceView('${s.id}', '${s.name}')" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg uppercase tracking-wider hover:bg-blue-600 hover:text-white transition-all">Manage</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function openAttendanceView(studentId, studentName) {
+        const data = await apiFetch(`/api/professor/attendance/${studentId}/${currentProfCourseId}`);
+        const grid = document.getElementById('attendanceGrid');
+        grid.innerHTML = `
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest">Attendance: ${studentName}</h3>
+                <button onclick="switchProfTab('roster')" class="text-[10px] font-bold text-gray-400 hover:text-gray-900 transition-colors">BACK TO ROSTER</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        `;
+        
+        if (data && data.length > 0) {
+            data.forEach((record, index) => {
+                const isPresent = record.status === 'Present';
+                grid.innerHTML += `
+                    <div class="p-4 rounded-2xl border ${isPresent ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30'} flex flex-col gap-2">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">${record.date}</span>
+                        <button onclick="toggleAttendance('${studentId}', '${index}')" class="w-full py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all ${isPresent ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-rose-500 text-white hover:bg-rose-600'}">
+                            ${record.status}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+        grid.innerHTML += '</div>';
+        switchProfTab('attendance');
+    }
+
+    async function toggleAttendance(studentId, index) {
+        const res = await apiFetch(`/api/professor/attendance/${studentId}/${currentProfCourseId}/${index}`, { method: 'PUT' });
+        if (res && res.success) {
+            // The original code had a bug here trying to extract student name from subtitle.
+            // Instead, we should pass the studentName to openAttendanceView or refetch it.
+            // For now, we'll just refresh the view and roster.
+            openAttendanceView(studentId, "Student"); // Refresh view (student name might be generic)
+            loadRoster(currentProfCourseId); // Refresh roster in background
+        }
+    }
+    async function openCourse(id, subtitle) {
+        // Normalize: remove spaces for consistent lookup
+        const cleanId = id.toString().trim().replace(/\s+/g, '');
+        currentCourseId = cleanId;
+        document.getElementById('courseTitle').innerText = id; // Show original
+        document.getElementById('courseSubtitle').innerText = subtitle;
+        document.getElementById('certCourseName').innerText = id;
+        
+        // Reset and hide certificate view
+        const certContainer = document.getElementById('certContainer');
+        if (!originalCertHTML) originalCertHTML = certContainer.innerHTML; // Store original HTML
+        certContainer.classList.add('hidden');
+        certContainer.style.opacity = '0';
+        certContainer.style.transform = 'scale(0.9)';
+
+        // Reset modules for new course view
+        document.querySelectorAll('.module-check').forEach(c => c.checked = false);
+        // document.getElementById('certContainer').classList.add('hidden'); // This is now handled above
+        // document.getElementById('certContainer').style.opacity = '0';
+        // document.getElementById('certContainer').style.transform = 'scale(0.9)';
+
+        document.getElementById('state-dashboard').style.display = 'none';
+        document.getElementById('state-course').style.display = 'flex';
+        gsap.fromTo('#state-course', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 });
+        fetchAttendance(id);
+        fetchStudentOfficeHours(id); // Dynamic fetch
+        loadChat(id, 'section');
+        loadChat(id, 'global');
+
+        // Check if modules were already completed to show cert status immediately
+        setTimeout(updateModuleProgress, 100);
+    }
+
+    async function fetchStudentOfficeHours(courseId) {
+        if (!courseId) {
+            console.warn(`[Student Office Hours] Aborting fetch: courseId is null`);
+            return;
+        }
+        const grid = document.getElementById('calendar-student-view');
+        if (!grid) return;
+        
+        // Normalize for API
+        const cleanId = courseId.toString().trim().replace(/\s+/g, '');
+        console.log(`[Student Office Hours] Fetching for ${cleanId}...`);
+        const data = await apiFetch(`/api/professor/office-hours/${cleanId}`);
+        
+        // Defensive Check
+        let slots = [];
+        let professorName = "Professor";
+        if (data && data.success && Array.isArray(data.slots)) {
+            slots = data.slots;
+            professorName = data.professorName || professorName;
+        } else if (Array.isArray(data)) {
+            slots = data;
+        }
+
+        // v14 Diagnostic Alert
+        if (!slots || slots.length === 0) {
+            console.warn(`[v14] ZERO slots found for ${cleanId}. Response:`, data);
+        } else {
+            console.log(`[v14] SUCCESS! Found ${slots.length} slots for ${cleanId}`);
+        }
+
+        // Clear previous slots (but keep headers)
+        grid.querySelectorAll('[data-day]').forEach(day => {
+            const header = day.querySelector('.tracking-widest');
+            day.innerHTML = '';
+            if (header) day.appendChild(header);
+            else {
+                const newHeader = document.createElement('div');
+                newHeader.className = "text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4";
+                newHeader.innerText = day.getAttribute('data-day').substring(0,3).toUpperCase();
+                day.appendChild(newHeader);
             }
-            nextTab.classList.remove('hidden');
-            nextTab.style.opacity = '1';
+        });
+
+        if (slots.length > 0) {
+            slots.forEach(slot => {
+                const dayStr = (slot.day || "").trim().toLowerCase();
+                const dayContainer = grid.querySelector(`[data-day="${dayStr}"]`);
+                if (dayContainer) {
+                    const div = document.createElement('div');
+                    div.className = "bg-white rounded-2xl shadow-sm border border-blue-100 p-3 mb-3 flex flex-col items-center justify-center transition-all hover:border-blue-400";
+                    div.innerHTML = `
+                        <span class="text-[10px] text-blue-600 font-black mb-1">${slot.time}</span>
+                        <span class="text-[10px] font-bold text-gray-800">${professorName}</span>
+                    `;
+                    dayContainer.appendChild(div);
+                }
+            });
+        }
+    }
+
+    async function loadOfficeSlots() {
+        if (!currentProfCourseId) return;
+        const data = await apiFetch(`/api/professor/office-hours/${currentProfCourseId}`);
+        const list = document.getElementById('officeSlotList');
+        
+        // Defensive check: handle both wrapped object {success, slots} and raw array [...]
+        let slots = [];
+        if (data && data.success && Array.isArray(data.slots)) {
+            slots = data.slots;
+        } else if (Array.isArray(data)) {
+            slots = data;
+        } else {
+            console.error("[Office Hours] Load failed:", data);
+            // Only alert if we really have no data
+            if (data) alert("Could not format schedule correctly. Check console.");
             return;
         }
 
-        const tl = gsap.timeline();
-        if (currentActive) {
-            tl.to(currentActive, { opacity: 0, y: -10, duration: 0.2, ease: "power2.inOut" })
-              .set(currentActive, { display: 'none', className: 'tab-content h-full flex flex-col hidden opacity-0' });
-        }
-        
-        tl.set(nextTab, { display: 'flex', className: 'tab-content h-full flex flex-col relative' })
-          .fromTo(nextTab, 
-             { opacity: 0, y: 20 },
-             { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }
-          );
-
-        // If switching to modules, animate the checklist
-        if (tabId === 'modules') {
-            gsap.fromTo('.module-card', 
-                { opacity: 0, x: -30 },
-                { opacity: 1, x: 0, stagger: 0.1, duration: 0.5, ease: "back.out(1.2)", delay: 0.2 }
-            );
-        }
-
-        // If switching to attendance, animate the stats and table
-        if (tabId === 'attendance') {
-            gsap.fromTo('.attendance-stat', 
-                { opacity: 0, scale: 0.9, y: 20 },
-                { opacity: 1, scale: 1, y: 0, stagger: 0.1, duration: 0.6, ease: "back.out(1.5)", delay: 0.2 }
-            );
-            gsap.fromTo('.attendance-row', 
-                { opacity: 0, x: -20 },
-                { opacity: 1, x: 0, stagger: 0.05, duration: 0.4, ease: "power2.out", delay: 0.4 }
-            );
+        list.innerHTML = '';
+        if (slots.length > 0) {
+            console.log(`[Office Hours] Rendering ${slots.length} slots`);
+            slots.forEach(slot => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div>
+                            <p class="text-xs font-bold text-gray-900 uppercase tracking-widest">${slot.day}</p>
+                            <p class="text-sm font-medium text-gray-500">${slot.time}</p>
+                        </div>
+                        <button onclick="deleteOfficeSlot('${slot.id}')" class="text-rose-500 hover:text-rose-700 p-2 transform hover:scale-110 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </div>
+                `;
+            });
+        } else {
+            list.innerHTML = '<p class="text-center text-gray-400 text-xs py-8">No office hours scheduled.</p>';
         }
     }
 
-    // Module Completion Logic
-    document.querySelectorAll('.module-check').forEach(check => {
-        check.addEventListener('change', (e) => {
-            const card = e.target.closest('.module-card');
-            
-            // Subtle pop on click
-            gsap.fromTo(card, { scale: 0.98 }, { scale: 1, duration: 0.3, ease: "back.out(2)" });
+    async function addOfficeSlot() {
+        if (!currentProfCourseId) {
+            alert("No course selected. Please select a course on the left.");
+            return;
+        }
 
-            const allChecked = Array.from(document.querySelectorAll('.module-check')).every(c => c.checked);
-            const container = document.getElementById('certContainer');
+        const day = document.getElementById('officeDay').value;
+        const startInput = document.getElementById('officeStart');
+        const endInput = document.getElementById('officeEnd');
+        const start = startInput.value;
+        const end = endInput.value;
+        
+        if (!start || !end) {
+            alert("Please select both a start and end time using the time pickers.");
+            return;
+        }
 
-            if (allChecked) {
-                container.classList.remove('hidden');
-                
-                const tl = gsap.timeline();
-                tl.fromTo(container, 
-                    { opacity: 0, scale: 0.8, y: 40 },
-                    { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "elastic.out(1, 0.6)", delay: 0.3 }
-                )
-                  .fromTo('.cert-icon', { rotate: -180, scale: 0 }, { rotate: 0, scale: 1, duration: 0.6, ease: "back.out(1.5)" }, "-=0.6")
-                  .fromTo('.cert-text', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.1, duration: 0.4 }, "-=0.4");
-            } else {
-                gsap.to(container, {
-                    opacity: 0, scale: 0.9, duration: 0.3, onComplete: () => container.classList.add('hidden')
-                });
-            }
+        // Native time pickers return HH:mm (24h). We save exactly this.
+        const time = `${start} - ${end}`;
+        console.log(`[Office Hours] Adding 24h slot for ${currentProfCourseId}: ${day} from ${time}`);
+        
+        const res = await apiFetch(`/api/professor/office-hours/${currentProfCourseId}`, {
+            method: 'POST',
+            body: JSON.stringify({ day, time })
         });
-    });
+        
+        if (res && res.success) {
+            startInput.value = '';
+            endInput.value = '';
+            alert("Office Hours saved successfully! ✅");
+            loadOfficeSlots();
+        } else {
+            const errorMsg = res && res.details ? ` Error: ${res.details}` : "Permission denied or server error.";
+            alert(`Failed to add office hours.${errorMsg}`);
+        }
+    }
 
-    // Chat Logic
-    function sendMessage(inputId, containerId) {
+    async function deleteOfficeSlot(slotId) {
+        const res = await apiFetch(`/api/professor/office-hours/${currentProfCourseId}/${slotId}`, { method: 'DELETE' });
+        if (res && res.success) loadOfficeSlots();
+    }
+
+    async function loadProfChat() {
+        const sectionMessages = await apiFetch(`/api/chat/${currentProfCourseId}/section`);
+        const globalMessages = await apiFetch(`/api/chat/${currentProfCourseId}/global`);
+        
+        renderProfMessages(sectionMessages, 'prof-section-chat');
+        renderProfMessages(globalMessages, 'prof-global-chat');
+    }
+
+    function renderProfMessages(messages, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        messages.forEach(msg => {
+            const isMe = msg.studentId === currentUser.id;
+            const div = document.createElement('div');
+            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+            div.innerHTML = `
+                <span class="text-[9px] ${isMe ? 'text-blue-600' : 'text-gray-400'} font-bold uppercase mb-1">${msg.studentName} ${msg.role === 'professor' ? '📑' : ''}</span>
+                <div class="text-[12px] p-3 rounded-2xl ${isMe ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'} max-w-[80%]">
+                    ${msg.text}
+                </div>
+                <span class="text-[8px] text-gray-300 mt-1">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            `;
+            container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function profSendMessage(type) {
+        const inputId = type === 'section' ? 'prof-sec-input' : 'prof-glob-input';
         const input = document.getElementById(inputId);
         const text = input.value.trim();
-        if (!text) return;
-
-        const container = document.getElementById(containerId);
+        if(!text) return;
         
-        // Create the message element
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'flex flex-col items-end message-anim opacity-0 transform translate-y-4';
-        msgDiv.innerHTML = `
-            <span class="text-[10px] text-blue-600 font-bold uppercase mb-1 mr-2">You</span>
-            <div class="chat-bubble sent shadow-[0_8px_16px_rgba(59,130,246,0.2)]" style="transform-origin: bottom right;">
-                ${text}
-            </div>
-        `;
-
-        container.appendChild(msgDiv);
-        input.value = '';
-        
-        // Scroll to the latest message
-        container.scrollTop = container.scrollHeight;
-
-        // GSAP popping animation for the new message
-        gsap.to(msgDiv, {
-            opacity: 1,
-            y: 0,
-            duration: 0.4,
-            ease: "back.out(1.5)"
+        const res = await apiFetch(`/api/chat/${currentProfCourseId}/${type}`, {
+            method: 'POST',
+            body: JSON.stringify({ text })
         });
-        
-        // Bouncy interaction on the bubble itself
-        const bubble = msgDiv.querySelector('.chat-bubble');
-        gsap.from(bubble, {
-            scale: 0.5,
-            duration: 0.5,
-            ease: "elastic.out(1, 0.5)",
-            delay: 0.1
-        });
+        if (res && res.success) {
+            input.value = '';
+            loadProfChat();
+        }
     }
 
-    // Initial load animations
-    window.onload = () => {
-        // Prepare text split
-        wrapWords('#main-heading');
+    async function setCertStatus(studentId, studentName, status) {
+        if (!confirm(`Are you sure you want to ${status} the certificate for ${studentName}?`)) return;
         
-        const tl = gsap.timeline();
+        const res = await apiFetch(`/api/professor/cert/${studentId}/${currentProfCourseId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ status })
+        });
         
-        // Header fade in
-        tl.from('header', { y: -50, opacity: 0, duration: 0.8, ease: "power3.out" })
-          
-          // Animate split words
-          .from('.word-inner', { 
-              y: 60, opacity: 0, stagger: 0.05, duration: 0.8, ease: "power4.out" 
-          }, "-=0.4")
-          
-          // Animate subheading
-          .from('#sub-heading', { opacity: 0, y: 20, duration: 0.6, ease: "power2.out" }, "-=0.6")
-          
-          // Animate cards
-          .from('.luxury-card-container', {
-              opacity: 0, y: 50, stagger: 0.1, duration: 1, ease: "expo.out"
-          }, "-=0.4")
-          
-          // Animate Student Widgets
-          .from('.student-widget', {
-              opacity: 0, y: 40, stagger: 0.15, duration: 0.8, ease: "back.out(1.2)"
-          }, "-=0.6");
-          
-        // Trigger SVG Circular Progress Bars after load
-        setTimeout(() => {
-            document.querySelectorAll('.prog').forEach(p => {
-                p.style.strokeDashoffset = p.getAttribute('data-target');
-            });
-        }, 800);
-    };
+        if (res && res.success) {
+            loadCertApprovals();
+        } else {
+            alert("Failed to update certificate status.");
+        }
+    }
+
+    async function loadCertApprovals() {
+        const list = document.getElementById('profCertList');
+        
+        if (!currentProfCourseId) {
+            list.innerHTML = `<div class="col-span-full text-center py-16"><p class="text-gray-400 text-sm">Select a course from the sidebar first.</p></div>`;
+            return;
+        }
+        
+        list.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-400 text-sm italic">Synchronizing academic records...</p>
+            </div>
+        `;
+        
+        try {
+            await loadRoster(currentProfCourseId);
+            const rosterTable = document.getElementById('profRosterBody');
+            const students = Array.from(rosterTable.rows).map(row => ({
+                id: row.dataset.studentId, // We should ensure loadRoster sets this
+                name: row.cells[0].querySelector('p').innerText
+            })).slice(0, 8); // Show first 8 for manageable UI
+
+            list.innerHTML = '';
+            for (const student of students) {
+                const certData = await apiFetch(`/api/professor/cert-status/${student.id}/${currentProfCourseId}`);
+                const status = certData.status || 'pending';
+                
+                let statusBadge = `<span class="text-[9px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Pending</span>`;
+                if (status === 'approved') statusBadge = `<span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Approved ✅</span>`;
+                if (status === 'disapproved') statusBadge = `<span class="text-[9px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Disapproved ❌</span>`;
+
+                list.innerHTML += `
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center group hover:shadow-md transition-all duration-300">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-900">${student.name}</h4>
+                        <div class="mt-2 mb-6">${statusBadge}</div>
+                        
+                        <div class="flex flex-col gap-2 w-full">
+                            <button onclick="setCertStatus('${student.id}', '${student.name}', 'approved')" class="w-full bg-emerald-500 text-white py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all active:scale-95">Approve</button>
+                            <button onclick="setCertStatus('${student.id}', '${student.name}', 'disapproved')" class="w-full bg-rose-500 text-white py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95">Disapprove</button>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error("loadCertApprovals error:", e);
+            list.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">Failed to load certificates.</div>`;
+        }
+    }
+
+    function wrapWords(selector) {
+        const el = document.querySelector(selector);
+        if(!el) return;
+        el.innerHTML = el.innerText.split(' ').map(w => `<span class="word-wrap inline-block overflow-hidden"><span class="word-inner inline-block">${w}</span></span>`).join(' ');
+    }
 </script>
 
 </body>

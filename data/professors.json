@@ -1,0 +1,122 @@
+[
+  {
+    "id": "P001",
+    "name": "Prof. Arjun Mehta",
+    "email": "arjun.mehta@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["DATA201"]
+  },
+  {
+    "id": "P002",
+    "name": "Prof. Sunita Rao",
+    "email": "sunita.rao@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["DATA202"]
+  },
+  {
+    "id": "P003",
+    "name": "Prof. Rakesh Iyer",
+    "email": "rakesh.iyer@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["DATA233"]
+  },
+  {
+    "id": "P004",
+    "name": "Prof. Nandita Ghosh",
+    "email": "nandita.ghosh@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["DATA234"]
+  },
+  {
+    "id": "P005",
+    "name": "Prof. Kiran Bhat",
+    "email": "kiran.bhat@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["DATA205"]
+  },
+  {
+    "id": "P006",
+    "name": "Prof. Meena Krishnan",
+    "email": "meena.krishnan@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["ECON202"]
+  },
+  {
+    "id": "P007",
+    "name": "Prof. Suresh Pillai",
+    "email": "suresh.pillai@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["ECON201"]
+  },
+  {
+    "id": "P008",
+    "name": "Prof. Anita Desai",
+    "email": "anita.desai@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["DATA223"]
+  },
+  {
+    "id": "P009",
+    "name": "Prof. Vikram Nair",
+    "email": "vikram.nair@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["CS101"]
+  },
+  {
+    "id": "P010",
+    "name": "Prof. Priya Sharma",
+    "email": "priya.sharma@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["MATH101"]
+  },
+  {
+    "id": "P011",
+    "name": "Prof. Harish Reddy",
+    "email": "harish.reddy@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["ENG101"]
+  },
+  {
+    "id": "P012",
+    "name": "Prof. Lalita Venkat",
+    "email": "lalita.venkat@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["BIOL101"]
+  },
+  {
+    "id": "P013",
+    "name": "Prof. Deepak Mistry",
+    "email": "deepak.mistry@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["PHYS101"]
+  },
+  {
+    "id": "P014",
+    "name": "Prof. Kavitha Mohan",
+    "email": "kavitha.mohan@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["PSY101"]
+  },
+  {
+    "id": "P015",
+    "name": "Prof. Ravi Shankar",
+    "email": "ravi.shankar@krea.ac.in",
+    "password": "prof@krea123",
+    "role": "professor",
+    "courses": ["HIST101"]
+  }
+]

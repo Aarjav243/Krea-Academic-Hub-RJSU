@@ -1,0 +1,65 @@
+[
+  {
+    "text": "We have a quiz tomorrow in section A",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-14T22:30:53.835Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  },
+  {
+    "text": "na not happening i am not coming dawg\\",
+    "studentId": "K1000",
+    "studentName": "Aarjav Jain",
+    "role": "student",
+    "timestamp": "2026-03-14T22:54:37.239Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  },
+  {
+    "text": "yo niggah why my attendance has dropped to 60%",
+    "studentId": "K1017",
+    "studentName": "Kyra Joshi",
+    "role": "student",
+    "timestamp": "2026-03-14T23:05:23.755Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  },
+  {
+    "text": "We are going to have 2 mid terms and end temrs guys",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-15T02:11:00.744Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  },
+  {
+    "text": "Aarjav Jain You are suspended from next class",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-15T02:19:58.543Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  },
+  {
+    "text": "Actually you are suspended from course",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-15T02:36:03.456Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  },
+  {
+    "text": "actually you suspended from this university aarjav",
+    "studentId": "P001",
+    "studentName": "Prof. Arjun Mehta",
+    "role": "professor",
+    "timestamp": "2026-03-15T08:44:40.245Z",
+    "courseId": "DATA201",
+    "chatType": "section"
+  }
+]
