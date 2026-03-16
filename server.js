@@ -59,14 +59,22 @@ try {
 } catch (e) { console.error("Failed to load cert_status.json", e); }
 
 function saveCertStatuses() {
-    fs.writeFileSync(certFilePath, JSON.stringify(certStatuses, null, 4), 'utf-8');
+    try {
+        fs.writeFileSync(certFilePath, JSON.stringify(certStatuses, null, 4), 'utf-8');
+    } catch (e) {
+        console.error("Vercel readonly FS skipped write:", e.message);
+    }
 }
 
 function saveStudents() {
-    fs.writeFileSync(path.join(__dirname, 'data', 'students.json'), JSON.stringify(students, null, 4), 'utf-8');
+    try {
+        fs.writeFileSync(path.join(__dirname, 'data', 'students.json'), JSON.stringify(students, null, 4), 'utf-8');
+    } catch (e) {
+        console.error("Vercel readonly FS skipped write:", e.message);
+    }
 }
 
-const server = http.createServer((req, res) => {
+const requestHandler = (req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
@@ -198,13 +206,16 @@ const server = http.createServer((req, res) => {
                             try {
                                 const slot = JSON.parse(body);
                                 slot.id = Date.now().toString();
-                                if (!fs.existsSync(path.join(__dirname, 'data', 'office_hours'))) {
-                                    fs.mkdirSync(path.join(__dirname, 'data', 'office_hours'), { recursive: true });
+                                try {
+                                    if (!fs.existsSync(path.join(__dirname, 'data', 'office_hours'))) {
+                                        fs.mkdirSync(path.join(__dirname, 'data', 'office_hours'), { recursive: true });
+                                    }
+                                    let slots = fs.existsSync(actualFileName) ? JSON.parse(fs.readFileSync(actualFileName, 'utf-8')) : [];
+                                    slots.push(slot);
+                                    fs.writeFileSync(actualFileName, JSON.stringify(slots, null, 2));
+                                } catch (err) {
+                                    console.error("Vercel readonly FS skipped write:", err.message);
                                 }
-                                // Use courseId (normalized) for saving new files to keep it clean
-                                let slots = fs.existsSync(actualFileName) ? JSON.parse(fs.readFileSync(actualFileName, 'utf-8')) : [];
-                                slots.push(slot);
-                                fs.writeFileSync(actualFileName, JSON.stringify(slots, null, 2));
                                 res.writeHead(200, { 'Content-Type': 'application/json' });
                                 res.end(jsonResponse({ success: true, slot }));
                             } catch (e) {
@@ -219,10 +230,14 @@ const server = http.createServer((req, res) => {
                             res.writeHead(400); res.end(jsonResponse({ success: false, error: 'Slot ID missing' }));
                             return;
                         }
-                        let slots = fs.existsSync(actualFileName) ? JSON.parse(fs.readFileSync(actualFileName, 'utf-8')) : [];
-                        const oldLen = slots.length;
-                        slots = slots.filter(s => s.id !== slotId);
-                        fs.writeFileSync(actualFileName, JSON.stringify(slots, null, 2));
+                        try {
+                            let slots = fs.existsSync(actualFileName) ? JSON.parse(fs.readFileSync(actualFileName, 'utf-8')) : [];
+                            const oldLen = slots.length;
+                            slots = slots.filter(s => s.id !== slotId);
+                            fs.writeFileSync(actualFileName, JSON.stringify(slots, null, 2));
+                        } catch (err) {
+                            console.error("Vercel readonly FS skipped write:", err.message);
+                        }
                         res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(jsonResponse({ success: true }));
                         return;
@@ -449,7 +464,7 @@ const server = http.createServer((req, res) => {
             res.end(content, 'utf-8');
         }
     });
-});
+};
 
 function handleChat(req, res, url, sender) {
     const parts = url.pathname.split('/');
@@ -488,7 +503,11 @@ function handleChat(req, res, url, sender) {
                     chatData = JSON.parse(fs.readFileSync(fileName, 'utf-8'));
                 }
                 chatData.push(message);
-                fs.writeFileSync(fileName, JSON.stringify(chatData, null, 2));
+                try {
+                    fs.writeFileSync(fileName, JSON.stringify(chatData, null, 2));
+                } catch (err) {
+                    console.error("Vercel readonly FS skipped write:", err.message);
+                }
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(jsonResponse({ success: true, message }));
@@ -503,15 +522,21 @@ function jsonResponse(obj) {
     return JSON.stringify(obj);
 }
 
-server.on('error', (e) => {
-    if (e.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Please close the other process.`);
-    } else {
-        console.error('Server error:', e);
-    }
-});
+const server = http.createServer(requestHandler);
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`KreaAcademicHub Running at http://localhost:${PORT}/`);
-    console.log(`Also available at http://127.0.0.1:${PORT}/`);
-});
+if (!process.env.VERCEL) {
+    server.on('error', (e) => {
+        if (e.code === 'EADDRINUSE') {
+            console.error(`Port ${PORT} is already in use. Please close the other process.`);
+        } else {
+            console.error('Server error:', e);
+        }
+    });
+
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`KreaAcademicHub Running at http://localhost:${PORT}/`);
+        console.log(`Also available at http://127.0.0.1:${PORT}/`);
+    });
+}
+
+module.exports = requestHandler;
