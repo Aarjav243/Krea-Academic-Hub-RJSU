@@ -61,5 +61,14 @@
     "timestamp": "2026-03-15T08:44:40.245Z",
     "courseId": "DATA201",
     "chatType": "section"
+  },
+  {
+    "text": "DO what you want",
+    "studentId": "K1000",
+    "studentName": "Aarjav Jain",
+    "role": "student",
+    "timestamp": "2026-03-16T17:55:37.237Z",
+    "courseId": "DATA201",
+    "chatType": "section"
   }
 ]

@@ -38,5 +38,14 @@
     "timestamp": "2026-03-14T21:50:26.516Z",
     "courseId": "DATA233",
     "chatType": "section"
+  },
+  {
+    "text": "Recurssion will come but only basic questions will be asked",
+    "studentId": "P003",
+    "studentName": "Prof. Rakesh Iyer",
+    "role": "professor",
+    "timestamp": "2026-03-15T13:47:58.010Z",
+    "courseId": "DATA233",
+    "chatType": "section"
   }
 ]

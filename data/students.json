@@ -211,17 +211,17 @@
                             {
                                 "day": "Monday",
                                 "date": "2026-03-01",
-                                "status": "Absent"
+                                "status": "Present"
                             },
                             {
                                 "day": "Tuesday",
                                 "date": "2026-03-02",
-                                "status": "Absent"
+                                "status": "Present"
                             },
                             {
                                 "day": "Wednesday",
                                 "date": "2026-03-03",
-                                "status": "Absent"
+                                "status": "Present"
                             },
                             {
                                 "day": "Thursday",
