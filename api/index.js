@@ -3,11 +3,9 @@ const { getDb } = require('../db');
 const STUDENT_API_KEY = "Krea-Hub-Secret-2026";
 const PROFESSOR_API_KEY = "Krea-Prof-Secret-2026";
 
-// Sessions stored in MongoDB so they survive Vercel cold starts
 async function getSession(db, token) {
     if (!token) return null;
-    const doc = await db.collection('sessions').findOne({ _id: token });
-    return doc || null;
+    return await db.collection('sessions').findOne({ _id: token }) || null;
 }
 
 async function saveSession(db, token, id, role) {
@@ -18,11 +16,14 @@ async function saveSession(db, token, id, role) {
     );
 }
 
-function jsonResponse(obj) { return JSON.stringify(obj); }
+function sendJson(res, status, obj) {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(status).send(JSON.stringify(obj));
+}
 
 function parseBody(req) {
     return new Promise((resolve, reject) => {
-        if (req.body) { resolve(req.body); return; }
+        if (req.body && typeof req.body === 'object') { resolve(req.body); return; }
         let body = '';
         req.on('data', chunk => body += chunk);
         req.on('end', () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
@@ -53,8 +54,7 @@ module.exports = async (req, res) => {
             if (prof && prof.password === password) {
                 const token = 'token_' + Math.random().toString(36).substring(2);
                 await saveSession(db, token, prof._id, 'professor');
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).send(jsonResponse({ success: true, token, role: 'professor', apiKey: PROFESSOR_API_KEY, name: prof.name }));
+                sendJson(res, 200, { success: true, token, role: 'professor', apiKey: PROFESSOR_API_KEY, name: prof.name });
                 return;
             }
 
@@ -66,14 +66,13 @@ module.exports = async (req, res) => {
             if (student && student.password === password) {
                 const token = 'token_' + Math.random().toString(36).substring(2);
                 await saveSession(db, token, student._id, 'student');
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).send(jsonResponse({ success: true, token, role: 'student', apiKey: STUDENT_API_KEY, studentName: student.name }));
+                sendJson(res, 200, { success: true, token, role: 'student', apiKey: STUDENT_API_KEY, studentName: student.name });
                 return;
             }
 
-            res.status(401).send(jsonResponse({ success: false, message: 'Invalid credentials' }));
+            sendJson(res, 401, { success: false, message: 'Invalid credentials' });
         } catch (e) {
-            res.status(400).send(jsonResponse({ success: false, message: 'Bad Request' }));
+            sendJson(res, 400, { success: false, message: 'Bad Request' });
         }
         return;
     }
@@ -85,7 +84,7 @@ module.exports = async (req, res) => {
     const apiKeyHeader = req.headers['x-api-key'];
 
     if (!session || (apiKeyHeader !== STUDENT_API_KEY && apiKeyHeader !== PROFESSOR_API_KEY)) {
-        res.status(401).send(jsonResponse({ success: false, error: 'Unauthorized' }));
+        sendJson(res, 401, { success: false, error: 'Unauthorized' });
         return;
     }
 
@@ -103,17 +102,14 @@ module.exports = async (req, res) => {
             const rawCourseId = officeHoursParts[0];
             const slotId = officeHoursParts[1];
 
-            if (!rawCourseId) {
-                res.status(400).send(jsonResponse({ success: false, error: 'Course ID missing' })); return;
-            }
+            if (!rawCourseId) { sendJson(res, 400, { success: false, error: 'Course ID missing' }); return; }
             const courseId = rawCourseId.toString().trim().replace(/\s+/g, '');
 
             if (req.method === 'GET') {
                 const professors = await db.collection('professors').find({}).toArray();
                 const prof = professors.find(p => p.courses && (p.courses.includes(courseId) || p.courses.includes(rawCourseId)));
                 const ohDoc = await db.collection('office_hours').findOne({ _id: courseId });
-                const slots = ohDoc ? ohDoc.slots : [];
-                res.status(200).send(jsonResponse({ success: true, professorName: prof ? prof.name : 'Unassigned', slots }));
+                sendJson(res, 200, { success: true, professorName: prof ? prof.name : 'Unassigned', slots: ohDoc ? ohDoc.slots : [] });
                 return;
             }
 
@@ -125,15 +121,15 @@ module.exports = async (req, res) => {
                     const slots = ohDoc ? ohDoc.slots : [];
                     slots.push(slot);
                     await db.collection('office_hours').replaceOne({ _id: courseId }, { _id: courseId, slots }, { upsert: true });
-                    res.status(200).send(jsonResponse({ success: true, slot }));
+                    sendJson(res, 200, { success: true, slot });
                     return;
                 }
                 if (req.method === 'DELETE') {
-                    if (!slotId) { res.status(400).send(jsonResponse({ success: false, error: 'Slot ID missing' })); return; }
+                    if (!slotId) { sendJson(res, 400, { success: false, error: 'Slot ID missing' }); return; }
                     const ohDoc = await db.collection('office_hours').findOne({ _id: courseId });
                     const slots = ohDoc ? ohDoc.slots.filter(s => s.id !== slotId) : [];
                     await db.collection('office_hours').replaceOne({ _id: courseId }, { _id: courseId, slots }, { upsert: true });
-                    res.status(200).send(jsonResponse({ success: true }));
+                    sendJson(res, 200, { success: true });
                     return;
                 }
             }
@@ -142,25 +138,25 @@ module.exports = async (req, res) => {
         // ========== STUDENT ENDPOINTS ==========
         if (sessionRole === 'student') {
             const currentStudent = await db.collection('students').findOne({ _id: sessionId });
-            if (!currentStudent) { res.status(404).send(jsonResponse({ error: 'Student not found' })); return; }
+            if (!currentStudent) { sendJson(res, 404, { error: 'Student not found' }); return; }
 
             if (url.pathname === '/api/me') {
-                res.status(200).send(jsonResponse(currentStudent)); return;
+                sendJson(res, 200, currentStudent); return;
             }
             if (url.pathname === '/api/courses') {
-                res.status(200).send(jsonResponse({ courses: currentStudent.active_courses, trimesters: currentStudent.trimesters })); return;
+                sendJson(res, 200, { courses: currentStudent.active_courses, trimesters: currentStudent.trimesters }); return;
             }
             if (url.pathname.startsWith('/api/cert-status/')) {
                 const courseId = url.pathname.split('/').pop();
                 const certDoc = await db.collection('cert_statuses').findOne({ _id: `${sessionId}_${courseId}` });
-                res.status(200).send(jsonResponse(certDoc || { status: 'pending' })); return;
+                sendJson(res, 200, certDoc || { status: 'pending' }); return;
             }
             if (url.pathname.startsWith('/api/attendance/')) {
                 const courseId = url.pathname.split('/').pop();
                 const allCourses = currentStudent.trimesters.flatMap(t => t.courses);
                 const course = allCourses.find(c => c.id === courseId);
-                if (course) res.status(200).send(jsonResponse(course.attendance));
-                else res.status(404).send(jsonResponse({ error: 'Course not found' }));
+                if (course) sendJson(res, 200, course.attendance);
+                else sendJson(res, 404, { error: 'Course not found' });
                 return;
             }
             if (url.pathname === '/api/download/csv') {
@@ -180,10 +176,10 @@ module.exports = async (req, res) => {
         // ========== PROFESSOR ENDPOINTS ==========
         if (sessionRole === 'professor') {
             const currentProf = await db.collection('professors').findOne({ _id: sessionId });
-            if (!currentProf) { res.status(404).send(jsonResponse({ error: 'Professor not found' })); return; }
+            if (!currentProf) { sendJson(res, 404, { error: 'Professor not found' }); return; }
 
             if (url.pathname === '/api/me') {
-                res.status(200).send(jsonResponse(currentProf)); return;
+                sendJson(res, 200, currentProf); return;
             }
             if (req.method === 'PUT' && url.pathname.startsWith('/api/professor/cert/')) {
                 const parts = url.pathname.split('/');
@@ -196,14 +192,14 @@ module.exports = async (req, res) => {
                     { _id: key, status, by: currentProf.name, at: new Date().toISOString() },
                     { upsert: true }
                 );
-                res.status(200).send(jsonResponse({ success: true })); return;
+                sendJson(res, 200, { success: true }); return;
             }
             if (req.method === 'GET' && url.pathname.startsWith('/api/professor/cert-status/')) {
                 const parts = url.pathname.split('/');
                 const courseId = parts.pop();
                 const studentId = parts.pop();
                 const certDoc = await db.collection('cert_statuses').findOne({ _id: `${studentId}_${courseId}` });
-                res.status(200).send(jsonResponse(certDoc || { status: 'pending' })); return;
+                sendJson(res, 200, certDoc || { status: 'pending' }); return;
             }
             if (url.pathname.startsWith('/api/professor/roster/')) {
                 const courseId = url.pathname.split('/').pop();
@@ -219,17 +215,17 @@ module.exports = async (req, res) => {
                         totalClasses, presentCount
                     };
                 });
-                res.status(200).send(jsonResponse(roster)); return;
+                sendJson(res, 200, roster); return;
             }
             if (url.pathname.startsWith('/api/professor/attendance/') && req.method === 'GET') {
                 const parts = url.pathname.split('/');
                 const courseId = parts.pop();
                 const studentId = parts.pop();
                 const student = await db.collection('students').findOne({ _id: studentId });
-                if (!student) { res.status(404).send(); return; }
+                if (!student) { res.status(404).end(); return; }
                 const allCourses = student.trimesters.flatMap(t => t.courses);
                 const course = allCourses.find(c => c.id === courseId);
-                res.status(200).send(jsonResponse(course ? course.attendance : [])); return;
+                sendJson(res, 200, course ? course.attendance : []); return;
             }
             if (url.pathname.startsWith('/api/professor/attendance/') && req.method === 'PUT') {
                 const parts = url.pathname.split('/');
@@ -237,8 +233,7 @@ module.exports = async (req, res) => {
                 const courseId = parts.pop();
                 const studentId = parts.pop();
                 const student = await db.collection('students').findOne({ _id: studentId });
-                if (!student) { res.status(404).send(); return; }
-
+                if (!student) { res.status(404).end(); return; }
                 let found = false;
                 student.trimesters.forEach(t => {
                     t.courses.forEach(c => {
@@ -249,18 +244,18 @@ module.exports = async (req, res) => {
                     });
                 });
                 if (found) await db.collection('students').replaceOne({ _id: studentId }, student);
-                res.status(200).send(jsonResponse({ success: found })); return;
+                sendJson(res, 200, { success: found }); return;
             }
             if (url.pathname.startsWith('/api/chat/')) {
                 return handleChat(req, res, url, db, { id: currentProf._id, name: currentProf.name, role: 'professor' });
             }
         }
 
-        res.status(404).send(jsonResponse({ error: 'API Route Not Found' }));
+        sendJson(res, 404, { error: 'API Route Not Found' });
 
     } catch (error) {
         console.error('API Error:', error);
-        res.status(500).send(jsonResponse({ success: false, error: 'Internal Server Error' }));
+        sendJson(res, 500, { success: false, error: 'Internal Server Error' });
     }
 };
 
@@ -274,7 +269,8 @@ async function handleChat(req, res, url, db, sender) {
             .find({ courseId, chatType: type })
             .sort({ timestamp: 1 })
             .toArray();
-        res.status(200).send(jsonResponse(messages));
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).send(JSON.stringify(messages));
     } else if (req.method === 'POST') {
         const body = await parseBody(req);
         const message = {
@@ -288,6 +284,7 @@ async function handleChat(req, res, url, db, sender) {
         };
         if (body.pinned) message.pinned = true;
         await db.collection('chats').insertOne(message);
-        res.status(200).send(jsonResponse({ success: true, message }));
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).send(JSON.stringify({ success: true, message }));
     }
 }
