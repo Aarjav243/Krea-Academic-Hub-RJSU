@@ -12,6 +12,8 @@
   "author": "Antigravity",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.2.0",
     "pm2": "^6.0.14"
   }
 }
